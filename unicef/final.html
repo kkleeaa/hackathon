@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platforma AI për AAC</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 25px 0;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+        }
+        button.btn-gjenero {
+            padding: 14px 30px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button.btn-gjenero:hover {
+            background-color: #2980b9;
+        }
+        .module-box {
+            background: #fafafa;
+            border-left: 5px solid #3498db;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .module-box h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        .sekuenca-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .sekuenca-hap {
+            background: #e1f5fe;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #b3e5fc;
+            font-weight: bold;
+            color: #0277bd;
+        }
+        .kartela-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .kartela-karta {
+            background: white;
+            width: 130px;
+            height: 170px;
+            border: 2px solid #cfd8dc;
+            border-radius: 12px;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        .tabela-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .btn-komunikimi {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #a5d6a7;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .btn-komunikimi:active {
+            transform: scale(0.95);
+            background: #c8e6c9;
+        }
+        .historia-paragraf {
+            background: #fffde7;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #fff59d;
+            margin: 8px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Platforma inteligjente "AI për AAC"</h1>
+    <p style="text-align: center; color: #7f8c8d; margin-top: 0;">Mjet ndihmës për mësuesit dhe terapeutët e fëmijëve me komunikim të kufizuar verbal.</p>
+    
+    <div class="input-group">
+        <input type="text" id="tema" placeholder="Shkruaj qëllimin (p.sh., Dua të mësoj larjen e duarve ose Të shkojmë te mjeku)...">
+        <button class="btn-gjenero" onclick="gjeneroPaketen()">Gjenero Materialet</button>
+    </div>
+
+    <div class="modules-container">
+        <div class="module-box">
+            <h3>Moduli A: Sekuencat Vizuale (Për fëmijën dhe mësuesin)</h3>
+            <div id="moduliA" style="color: #95a5a6;">Materiali i gjeneruar do të shfaqet këtu...</div>
+        </div>
+        
+        <div class="module-box">
+            <h3>Moduli B: Kartelat me Simbole (Flashcards)</h3>
+            <div id="moduliB" style="color: #95a5a6;">Materiali i gjeneruar do të shfaqet këtu...</div>
+        </div>
+        
+        <div class="module-box">
+            <h3>Moduli C: Histori Sociale (Tregimi)</h3>
+            <div id="moduliC" style="color: #95a5a6;">Materiali i gjeneruar do të shfaqet këtu...</div>
+        </div>
+        
+        <div class="module-box">
+            <h3>Moduli D: Tabelë Komunikimi (Butonat Interaktivë)</h3>
+            <div id="moduliD" style="color: #95a5a6;">Materiali i gjeneruar do të shfaqet këtu...</div>
+        </div>
+        
+        <div class="module-box">
+            <h3>Moduli E: Aktivitete për Klasë (Udhëzues për Mësuesin)</h3>
+            <div id="moduliE" style="color: #95a5a6;">Materiali i gjeneruar do të shfaqet këtu...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const OPENAI_API_KEY = "VENDOS_API_KEY_KETU"; 
+
+function lexoMeZe(teksti) {
+  if (!teksti) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(teksti);
+  utterance.lang = "sq-AL";
+  window.speechSynthesis.speak(utterance);
+}
+
+async function gjeneroPaketen() {
+  const tema = document.getElementById("tema")?.value.trim();
+  const moduliA = document.getElementById("moduliA");
+  const moduliB = document.getElementById("moduliB");
+  const moduliC = document.getElementById("moduliC");
+  const moduliD = document.getElementById("moduliD");
+  const moduliE = document.getElementById("moduliE");
+
+  if (!tema) {
+    alert("Ju lutem vendosni një temë.");
+    return;
+  }
+
+  [moduliA, moduliB, moduliC, moduliD, moduliE].forEach((el) => {
+    if (el) el.innerHTML = "<i>Duke gjeneruar materialet nga AI... Ju lutem prisni pak.</i>";
+  });
+
+  // PËRDITËSIM I PROMPT-IT: I kërkojmë AI që numri i hapave të jetë ekzaktësisht i barabartë me numrin e kartelave vizuale!
+  const prompt = `Roli: Ti je një ekspert i Komunikimit Augmentativ dhe Alternativ (AAC) dhe një terapist i specializuar për fëmijët me komunikim të kufizuar verbal (autizëm, vonesa në zhvillim).
+Detyra: Përdoruesi do të vendosë një temë në gjuhën shqipe. Ti duhet të gjenerosh automatikisht 5 materiale terapeutike të strukturuara në mënyrë të përsosur në gjuhën shqipe.
+
+RREGULLI I REZOLUCIONIT: Çdo hap tek "sekuenca_vizuale" duhet të ketë ekzaktësisht një kartelë përkatëse tek "kartela_simbole" (pra numri i hapave tek sekuenca dhe numri i kartelave të jetë plotësisht i barabartë). Tek "kartela_simbole", fjalët e përzgjedhura duhet të jenë emra ose folje kyçe të shkurtra që ilustrojnë atë hap (p.sh. nëse hapi është "Hap ujin", fjala tek kartela të jetë "Uji" ose "Rubineti").
+
+Formatimi i Output-it: Ktheje përgjigjen VETËM si një objekt të pastër JSON. Mos shto asnjë fjalë hyrëse apo përmbledhje jashtë JSON-it.
+Struktura e saktë e JSON që duhet të kthesh është kjo:
+{
+  "sekuenca_vizuale": [ {"hapi": 1, "veprimi": "Veprimi i shkurtër"} ],
+  "kartela_simbole": [ {"fjala": "Fjala Kyçe", "kategoria": "Hapi 1"} ],
+  "histori_sociale": { "titulli": "Titulli", "paragrafet": ["Paragrafi 1"] },
+  "tabele_komunikimi": { "peremra": [], "folje": [], "emra": [], "ndjenja_komente": [] },
+  "aktivitete_klase": [ {"emri": "Emri", "pershkrimi": "Pershkrimi"} ]
+}
+Input nga mësuesi: ${tema}`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data?.error?.message || "Gabim gjatë thirrjes së OpenAI API.");
+    }
+
+    const permbajtja = data.choices?.[0]?.message?.content;
+    const paketa = JSON.parse(permbajtja);
+
+    // Moduli A: Sekuencat Vizuale me stilin e parë
+    const sekuenca = Array.isArray(paketa.sekuenca_vizuale) ? paketa.sekuenca_vizuale : [];
+    let htmlA = '<div class="sekuenca-container">';
+    sekuenca.forEach((item) => {
+        htmlA += `<div class="sekuenca-hap">${item.hapi}. ${item.veprimi}</div>`;
+    });
+    htmlA += '</div>';
+    moduliA.innerHTML = htmlA;
+
+    // MODULI B: Kartelat (Flashcards) me ILUSTRIME TË THJESHTA (HTML <img> tag) dhe të lidhura me hapat
+    const kartela = Array.isArray(paketa.kartela_simbole) ? paketa.kartela_simbole : [];
+    let htmlB = '<div class="kartela-container">';
+    
+    kartela.forEach((item, index) => {
+        // Përdorim loremflickr me tagat vector, clipart, drawing për të siguruar vizatime të pastra terapeutike
+        const linkuIlustrimit = `https://loremflickr.com/130/130/${item.fjala},vector,clipart,drawing/all`;
+
+        htmlB += `
+            <div class="kartela-karta">
+                <!-- Tregon cili hap i Modulit A i korrespondon kjo kartelë -->
+                <div style="font-size: 10px; color: #3498db; text-transform: uppercase; font-weight: bold;">Hapi ${index + 1}</div>
+                
+                <!-- Tagu i pastër HTML për shfaqjen e ilustrimit të thjeshtë grafik -->
+                <img src="${linkuIlustrimit}" alt="${item.fjala}" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; margin: 5px 0;">
+                
+                <div style="font-weight: bold; color: #2c3e50; font-size: 14px;">${item.fjala || ""}</div>
+            </div>`;
+    });
+    htmlB += '</div>';
+    moduliB.innerHTML = htmlB;
+
+    // Moduli C: Historia Sociale me stilin e verdhë
+    const histori = paketa.histori_sociale || {};
+    const paragrafet = Array.isArray(histori.paragrafet) ? histori.paragrafet : [];
+    moduliC.innerHTML = `
+      <h4 style="margin-bottom: 10px; color: #2c3e50;">${histori.titulli || ""}</h4>
+      ${paragrafet.map((p) => `<div class="historia-paragraf">${p}</div>`).join("")}
+    `;
+
+    // Moduli D: Tabela e Komunikimit me butonat interaktivë audio (të gjelbër)
+    const tabela = paketa.tabele_komunikimi || {};
+    const fjale = [
+      ...(Array.isArray(tabela.peremra) ? tabela.peremra : []),
+      ...(Array.isArray(tabela.folje) ? tabela.folje : []),
+      ...(Array.isArray(tabela.emra) ? tabela.emra : []),
+      ...(Array.isArray(tabela.ndjenja_komente) ? tabela.ndjenja_komente : [])
+    ];
+
+    let htmlD = '<div class="tabela-grid">';
+    fjale.forEach((fjala) => {
+        htmlD += `<button class="btn-komunikimi" onclick="lexoMeZe('${fjala}')">🔊 ${fjala}</button>`;
+    });
+    htmlD += '</div>';
+    moduliD.innerHTML = htmlD;
+
+    // Moduli E: Aktivitete për Klasë
+    const aktivitete = Array.isArray(paketa.aktivitete_klase) ? paketa.aktivitete_klase : [];
+    let htmlE = '<ul style="padding-left: 20px; line-height: 1.6; font-size: 15px;">';
+    aktivitete.forEach((item) => {
+        htmlE += `<li style="margin-bottom: 8px;"><strong>${item.emri || ""}:</strong> ${item.pershkrimi || ""}</li>`;
+    });
+    htmlE += '</ul>';
+    moduliE.innerHTML = htmlE;
+
+  } catch (error) {
+    const mesazh = `Gabim: ${error.message}`;
+    [moduliA, moduliB, moduliC, moduliD, moduliE].forEach((el) => {
+      if (el) el.innerHTML = `<div style="color:red;">${mesazh}</div>`;
+    });
+    console.error(error);
+  }
+}
+</script>
+
+</body>
+</html>

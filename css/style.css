@@ -779,7 +779,7 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 52% 34%;
+  object-position: 50% 18%;
 }
 
 .chat-form {
@@ -929,9 +929,10 @@ textarea {
 
 .atlas-corner-bubble {
   position: absolute;
-  right: min(72%, 10.4rem);
-  top: clamp(0.4rem, 2vw, 1.1rem);
-  width: min(13.5rem, 48vw);
+  right: min(82%, 11.8rem);
+  top: clamp(0.05rem, 1.4vw, 0.45rem);
+  z-index: 2;
+  width: min(14.5rem, 52vw);
   padding: 0.72rem 0.85rem;
   border: 1px solid color-mix(in srgb, var(--atlas-blue-strong) 34%, var(--line));
   border-radius: 18px 18px 6px 18px;
@@ -959,6 +960,8 @@ textarea {
 }
 
 .atlas-standing-image {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: auto;
@@ -1160,9 +1163,9 @@ textarea {
   }
 
   .atlas-corner-bubble {
-    right: 7.6rem;
+    right: 8.25rem;
     top: 0.35rem;
-    width: min(11rem, 58vw);
+    width: min(12rem, 62vw);
     font-size: 0.78rem;
   }
 }

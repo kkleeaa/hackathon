@@ -797,7 +797,7 @@ function renderMessage(message) {
 function atlasAvatar(size = "small") {
   return `
     <div class="atlas-avatar ${size === "large" ? "atlas-avatar-large" : ""}" aria-label="Atlas mascot avatar" role="img">
-      <img src="assets/images/atlas-mascot-thumb.png" alt="" />
+      <img src="assets/images/atlas-standing-widget.png" alt="" />
     </div>
   `;
 }

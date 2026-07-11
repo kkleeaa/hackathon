@@ -1,0 +1,56 @@
+{
+  "studentName": "Maya Johnson",
+  "age": 8,
+  "diagnosis": "Autism spectrum disorder with sensory processing needs",
+  "communicationAbilities": "Uses short phrases, picture choices, and yes/no responses. Benefits from wait time and visual supports.",
+  "fineMotorGoals": [
+    "Improve pincer grasp for classroom tools",
+    "Cut along curved lines with adapted scissors",
+    "Write first name with consistent letter formation"
+  ],
+  "grossMotorGoals": [
+    "Follow a three-step movement routine",
+    "Increase balance during playground transitions"
+  ],
+  "speechGoals": [
+    "Use a five-word request with visual support",
+    "Answer who/what/where questions after a story"
+  ],
+  "sensoryNeeds": [
+    "Noise reduction during assemblies",
+    "Movement breaks every 45 minutes",
+    "Access to calm corner after unexpected changes"
+  ],
+  "behaviorTriggers": [
+    "Loud transitions",
+    "Unexpected schedule changes",
+    "Long writing tasks without breaks"
+  ],
+  "preferredReinforcers": [
+    "Sticker choice",
+    "Drawing time",
+    "Five-minute puzzle",
+    "Choice of classroom helper job"
+  ],
+  "immediateObjectives": [
+    "Use a first/then board during writing block",
+    "Request a break using a picture card",
+    "Complete hand washing sequence with two prompts or fewer"
+  ],
+  "longTermObjectives": [
+    "Independently use visual schedule across the school day",
+    "Communicate needs using speech, AAC, or picture exchange",
+    "Complete self-care routines with minimal adult prompting"
+  ],
+  "strengths": [
+    "Strong visual memory",
+    "Enjoys helping peers",
+    "Responds well to predictable routines",
+    "Curious about science and art"
+  ],
+  "challenges": [
+    "Difficulty with noisy settings",
+    "Needs support initiating peer play",
+    "Writing stamina is limited"
+  ]
+}

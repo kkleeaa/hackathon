@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AI-powered special education planning assistant for IEP, AAC, progress, and parent reports." />
+    <title>AI Special Education Assistant</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#mainContent">Skip to content</a>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+        <div class="sidebar-brand">
+          <div class="brand-mark">AI</div>
+          <div>
+            <strong>Special Ed</strong>
+            <span>Assistant</span>
+          </div>
+        </div>
+        <nav class="nav-list" id="navList"></nav>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar" role="banner">
+          <button class="icon-button menu-toggle" data-action="toggle-sidebar" aria-label="Toggle navigation">☰</button>
+          <div class="brand-mark small" aria-hidden="true">AI</div>
+          <div class="title-block">
+            <p class="eyebrow">AI Special Education Assistant</p>
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+          <label class="search-shell" for="globalSearch">
+            <span aria-hidden="true">⌕</span>
+            <input id="globalSearch" type="search" placeholder="Search students, tools, reports..." autocomplete="off" />
+          </label>
+          <button class="icon-button" data-action="toggle-theme" aria-label="Toggle dark mode">◐</button>
+        </header>
+
+        <main id="mainContent" tabindex="-1">
+          <div id="searchResults" class="search-results hidden" role="region" aria-live="polite"></div>
+          <section id="viewRoot" class="view-root" aria-live="polite"></section>
+        </main>
+
+        <footer class="app-footer">
+          <p>Prototype data stays in memory only. Future AI and storage integrations should use encrypted, compliant services.</p>
+        </footer>
+      </div>
+    </div>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <div class="modal-backdrop hidden" id="modalBackdrop" role="presentation">
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="icon-button modal-close" data-action="close-modal" aria-label="Close modal">×</button>
+        <p class="eyebrow" id="modalEyebrow">Details</p>
+        <h2 id="modalTitle">Details</h2>
+        <div id="modalBody"></div>
+      </section>
+    </div>
+
+    <template id="loadingTemplate">
+      <div class="loading-state">
+        <span class="spinner" aria-hidden="true"></span>
+        <strong>Reviewing the plan...</strong>
+        <p>Extracting goals, supports, and classroom recommendations.</p>
+      </div>
+    </template>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

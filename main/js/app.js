@@ -441,22 +441,13 @@ function materialCard(title, items) {
 }
 
 function renderCommunicationBoards() {
-  state.lastMaterial = state.lastMaterial || generateAAC("Dua të mësoj larjen e duarve.");
   return `
-    <section class="glass-card">
-      <p class="eyebrow">Tabela komunikimi</p>
-      <h2>Zgjedhje gati për përdorim</h2>
-      <p>Këto tabela krijohen nga moduli AAC dhe mund të ndryshohen para printimit.</p>
-    </section>
-    <section class="materials-grid">
-      <article class="material-card">
-        <h3>Tabela bazë</h3>
-        <div class="board-grid">${state.lastMaterial.communicationBoard.flat().map((cell) => `<div class="board-cell">${cell}</div>`).join("")}</div>
-      </article>
-      <article class="material-card">
-        <h3>Tabela e pushimit</h3>
-        <div class="board-grid">${["Pushim", "Ndihmë", "Shumë zhurmë", "Prit", "Mbarova", "Zgjedhje"].map((cell) => `<div class="board-cell">${cell}</div>`).join("")}</div>
-      </article>
+    <section class="communication-module-shell" aria-label="Tabela komunikimi">
+      <iframe
+        class="communication-module-frame"
+        title="Tabela komunikimi"
+        src="components/tabela-komunikimi/module/final.html"
+      ></iframe>
     </section>
   `;
 }

@@ -657,6 +657,23 @@ textarea {
   gap: 0.7rem;
 }
 
+.communication-module-shell {
+  min-height: calc(100vh - 9rem);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+}
+
+.communication-module-frame {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - 9rem);
+  border: 0;
+  background: #fff;
+}
+
 .board-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1209,6 +1226,11 @@ textarea {
 
   .chat-shell {
     grid-template-rows: auto auto minmax(18rem, 58vh) auto;
+  }
+
+  .communication-module-shell,
+  .communication-module-frame {
+    min-height: calc(100vh - 6rem);
   }
 
   .message {

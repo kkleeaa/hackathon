@@ -67,7 +67,7 @@ async function init() {
   state.chatMessages = [
     {
       role: "ai",
-      text: `Hi. I can help turn ${state.currentStudent.name}'s goals into routines, AAC supports, teaching strategies, and family-friendly language.`,
+      text: `Hi, I am Atlas, your PIA Assistant. I can help turn ${state.currentStudent.name}'s goals into routines, AAC supports, teaching strategies, and family-friendly language.`,
       time: new Date()
     }
   ];
@@ -523,6 +523,14 @@ function renderReports() {
 function renderCoach() {
   return `
     <section class="chat-shell">
+      <div class="atlas-welcome">
+        ${atlasAvatar("large")}
+        <div>
+          <p class="eyebrow">AI Teaching Coach</p>
+          <h2>Chat with Atlas, your PIA Assistant!</h2>
+          <p>Atlas brings calm guidance, practical ideas, and classroom-ready strategies shaped around ${state.currentStudent.name}'s plan.</p>
+        </div>
+      </div>
       <div class="suggestions">
         ${suggestedQuestions.map((question) => `<button class="secondary-button" data-action="suggestion">${question}</button>`).join("")}
       </div>
@@ -531,7 +539,7 @@ function renderCoach() {
       </div>
       <form class="chat-form" id="chatForm">
         <label class="field">
-          <span>Message AI Teaching Coach</span>
+          <span>Message Atlas</span>
           <input id="chatInput" placeholder="Ask for a strategy, lesson idea, or family-friendly explanation..." autocomplete="off" />
         </label>
         <button class="primary-button" type="submit">Send</button>
@@ -763,7 +771,7 @@ async function sendCoachMessage(message) {
   state.chatMessages.push({ role: "teacher", text: clean, time: new Date() });
   navigate("coach");
   const log = document.getElementById("chatLog");
-  log.insertAdjacentHTML("beforeend", `<div class="message ai" id="typingMessage"><div class="avatar" style="width:2.4rem;border-radius:12px;background:var(--accent)">AI</div><div class="message-bubble"><span class="spinner" style="width:1.2rem;height:1.2rem;border-width:2px;"></span> Typing...</div></div>`);
+  log.insertAdjacentHTML("beforeend", `<div class="message ai" id="typingMessage">${atlasAvatar("small")}<div class="message-bubble atlas-bubble"><span class="spinner" style="width:1.2rem;height:1.2rem;border-width:2px;"></span> Atlas is thinking...</div></div>`);
   scrollChatToBottom();
   const response = await teacherCoach(clean, state.currentStudent);
   state.chatMessages.push({ role: "ai", text: response, time: new Date() });
@@ -771,16 +779,36 @@ async function sendCoachMessage(message) {
 }
 
 function renderMessage(message) {
-  const avatar = message.role === "teacher" ? "TC" : "AI";
-  const color = message.role === "teacher" ? "var(--primary)" : "var(--accent)";
+  const avatarMarkup = message.role === "teacher"
+    ? `<div class="avatar teacher-avatar" aria-hidden="true">TC</div>`
+    : atlasAvatar("small");
+  const bubbleClass = message.role === "teacher" ? "" : " atlas-bubble";
   return `
     <article class="message ${message.role}">
-      <div class="avatar" style="width:2.4rem;border-radius:12px;background:${color}" aria-hidden="true">${avatar}</div>
-      <div class="message-bubble">
+      ${avatarMarkup}
+      <div class="message-bubble${bubbleClass}">
         ${renderMarkdown(message.text)}
         <time>${new Date(message.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
       </div>
     </article>
+  `;
+}
+
+function atlasAvatar(size = "small") {
+  return `
+    <div class="atlas-avatar ${size === "large" ? "atlas-avatar-large" : ""}" aria-label="Atlas mascot avatar" role="img">
+      <span class="atlas-ear atlas-ear-left"></span>
+      <span class="atlas-ear atlas-ear-right"></span>
+      <span class="atlas-backpack"></span>
+      <span class="atlas-face">
+        <span class="atlas-eye atlas-eye-left"></span>
+        <span class="atlas-eye atlas-eye-right"></span>
+        <span class="atlas-nose"></span>
+        <span class="atlas-cheek atlas-cheek-left"></span>
+        <span class="atlas-cheek atlas-cheek-right"></span>
+      </span>
+      <span class="atlas-bulb" aria-hidden="true"></span>
+    </div>
   `;
 }
 

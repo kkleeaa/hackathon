@@ -7,6 +7,13 @@ export function renderDashboard(state) {
         <p class="eyebrow">Classroom command center</p>
         <h2>Welcome back, Ms. Carter</h2>
         <p>Turn IEP and PIA information into clear supports, routines, family updates, and daily teaching decisions.</p>
+        <div class="atlas-dashboard-callout">
+          ${dashboardAtlasAvatar()}
+          <div>
+            <strong>Chat with Atlas, your PIA Assistant!</strong>
+            <span>Atlas can help turn today&apos;s goals into calm, practical teaching ideas.</span>
+          </div>
+        </div>
         <div class="hero-actions">
           <button class="primary-button" data-route="upload">Upload Student Plan</button>
           <button class="secondary-button" data-route="aac">Generate AAC Materials</button>
@@ -58,6 +65,24 @@ export function renderDashboard(state) {
         </div>
       </article>
     </section>
+  `;
+}
+
+function dashboardAtlasAvatar() {
+  return `
+    <div class="atlas-avatar" aria-label="Atlas mascot avatar" role="img">
+      <span class="atlas-ear atlas-ear-left"></span>
+      <span class="atlas-ear atlas-ear-right"></span>
+      <span class="atlas-backpack"></span>
+      <span class="atlas-face">
+        <span class="atlas-eye atlas-eye-left"></span>
+        <span class="atlas-eye atlas-eye-right"></span>
+        <span class="atlas-nose"></span>
+        <span class="atlas-cheek atlas-cheek-left"></span>
+        <span class="atlas-cheek atlas-cheek-right"></span>
+      </span>
+      <span class="atlas-bulb" aria-hidden="true"></span>
+    </div>
   `;
 }
 

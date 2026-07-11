@@ -71,17 +71,7 @@ export function renderDashboard(state) {
 function dashboardAtlasAvatar() {
   return `
     <div class="atlas-avatar" aria-label="Atlas mascot avatar" role="img">
-      <span class="atlas-ear atlas-ear-left"></span>
-      <span class="atlas-ear atlas-ear-right"></span>
-      <span class="atlas-backpack"></span>
-      <span class="atlas-face">
-        <span class="atlas-eye atlas-eye-left"></span>
-        <span class="atlas-eye atlas-eye-right"></span>
-        <span class="atlas-nose"></span>
-        <span class="atlas-cheek atlas-cheek-left"></span>
-        <span class="atlas-cheek atlas-cheek-right"></span>
-      </span>
-      <span class="atlas-bulb" aria-hidden="true"></span>
+      <img src="assets/images/atlas-mascot-thumb.png" alt="" />
     </div>
   `;
 }

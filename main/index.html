@@ -8,6 +8,31 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <div class="api-key-gate" id="apiKeyGate">
+      <form class="api-key-card" id="apiKeyForm">
+        <div class="brand-mark" aria-hidden="true">AI</div>
+        <p class="eyebrow">Konfigurimi fillestar</p>
+        <h1>Lidhni OpenAI</h1>
+        <p>Vendosni API key për të aktivizuar funksionet AI te Tabela e komunikimit.</p>
+        <label class="field" for="apiKeyInput">
+          <span>OpenAI API key</span>
+          <input
+            id="apiKeyInput"
+            name="apiKey"
+            type="password"
+            placeholder="sk-..."
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            required
+          />
+        </label>
+        <p class="api-key-error hidden" id="apiKeyError" role="alert">Vendosni një API key të vlefshëm.</p>
+        <button class="primary-button" type="submit">Hap aplikacionin</button>
+        <small>Key ruhet vetëm në memorien e këtij tab-i dhe nuk shkruhet në skedarë ose në GitHub.</small>
+      </form>
+    </div>
+
     <a class="skip-link" href="#mainContent">Kalo te përmbajtja</a>
     <div class="app-shell">
       <aside class="sidebar" id="sidebar" aria-label="Navigimi kryesor">

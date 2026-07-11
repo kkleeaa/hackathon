@@ -49,8 +49,31 @@ const modalTitle = document.getElementById("modalTitle");
 const modalEyebrow = document.getElementById("modalEyebrow");
 const modalBody = document.getElementById("modalBody");
 const toastRegion = document.getElementById("toastRegion");
+const apiKeyGate = document.getElementById("apiKeyGate");
+const apiKeyForm = document.getElementById("apiKeyForm");
+const apiKeyInput = document.getElementById("apiKeyInput");
+const apiKeyError = document.getElementById("apiKeyError");
+let openAIApiKey = "";
 
-init();
+apiKeyForm.addEventListener("submit", handleApiKeySubmit);
+apiKeyInput.focus();
+
+function handleApiKeySubmit(event) {
+  event.preventDefault();
+  const key = apiKeyInput.value.trim();
+
+  if (!/^sk-[A-Za-z0-9_-]{16,}$/.test(key)) {
+    apiKeyError.classList.remove("hidden");
+    apiKeyInput.focus();
+    return;
+  }
+
+  openAIApiKey = key;
+  apiKeyInput.value = "";
+  apiKeyError.classList.add("hidden");
+  apiKeyGate.classList.add("hidden");
+  init();
+}
 
 async function init() {
   renderNavigation();
@@ -228,6 +251,29 @@ function renderRoute(route) {
 function attachRouteBehaviors(route) {
   if (route === "upload") attachUploadZone();
   if (route === "coach") scrollChatToBottom();
+  if (route === "boards") attachCommunicationModuleApi();
+}
+
+async function attachCommunicationModuleApi() {
+  const frame = document.querySelector(".communication-module-frame");
+  if (!frame) return;
+
+  try {
+    const response = await fetch(frame.dataset.moduleSrc);
+    if (!response.ok) throw new Error("Communication module unavailable");
+
+    const moduleHtml = await response.text();
+    const keyPlaceholder = '"VENDOS_API_KEY_KETU"';
+    if (!moduleHtml.includes(keyPlaceholder)) throw new Error("API key placeholder unavailable");
+
+    frame.srcdoc = moduleHtml.replace(keyPlaceholder, JSON.stringify(openAIApiKey));
+  } catch (error) {
+    console.error(error);
+    frame.replaceWith(Object.assign(document.createElement("p"), {
+      className: "glass-card",
+      textContent: "Tabela e komunikimit nuk mund të ngarkohet. Rifreskoni faqen dhe provoni përsëri."
+    }));
+  }
 }
 
 function renderStudents() {
@@ -446,7 +492,7 @@ function renderCommunicationBoards() {
       <iframe
         class="communication-module-frame"
         title="Tabela komunikimi"
-        src="components/tabela-komunikimi/module/final.html"
+        data-module-src="components/tabela-komunikimi/module/final.html"
       ></iframe>
     </section>
   `;

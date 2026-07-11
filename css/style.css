@@ -339,29 +339,6 @@ main {
   gap: 0.7rem;
 }
 
-.atlas-dashboard-callout {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 0.75rem;
-  width: min(100%, 34rem);
-  margin: 1rem 0;
-  padding: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--atlas-blue-strong) 25%, var(--line));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--atlas-blue) 18%, var(--surface-strong));
-  box-shadow: var(--shadow-soft);
-}
-
-.atlas-dashboard-callout strong,
-.atlas-dashboard-callout span {
-  display: block;
-}
-
-.atlas-dashboard-callout span {
-  color: var(--muted);
-}
-
 .primary-button,
 .secondary-button,
 .text-button,
@@ -950,10 +927,44 @@ textarea {
   filter: drop-shadow(0 1.45rem 1.6rem rgba(31, 45, 75, 0.34)) saturate(1.08);
 }
 
+.atlas-corner-bubble {
+  position: absolute;
+  right: min(72%, 10.4rem);
+  top: clamp(0.4rem, 2vw, 1.1rem);
+  width: min(13.5rem, 48vw);
+  padding: 0.72rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--atlas-blue-strong) 34%, var(--line));
+  border-radius: 18px 18px 6px 18px;
+  background: color-mix(in srgb, var(--surface-strong) 94%, var(--atlas-blue));
+  box-shadow: 0 16px 38px rgba(31, 45, 75, 0.16);
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.25;
+  pointer-events: none;
+  animation: atlasBubblePulse 2.8s ease-in-out infinite;
+}
+
+.atlas-corner-bubble::after {
+  content: "";
+  position: absolute;
+  right: -0.42rem;
+  bottom: 0.75rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-right: 1px solid color-mix(in srgb, var(--atlas-blue-strong) 34%, var(--line));
+  border-bottom: 1px solid color-mix(in srgb, var(--atlas-blue-strong) 34%, var(--line));
+  background: inherit;
+  transform: rotate(-45deg);
+}
+
 .atlas-standing-image {
   display: block;
   width: 100%;
   height: auto;
+  filter:
+    drop-shadow(0 0 1px rgba(86, 53, 28, 0.95))
+    drop-shadow(0 0 5px rgba(255, 255, 255, 0.92));
   pointer-events: none;
   user-select: none;
 }
@@ -1054,6 +1065,18 @@ textarea {
   }
 }
 
+@keyframes atlasBubblePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 16px 38px rgba(31, 45, 75, 0.16);
+  }
+  50% {
+    transform: scale(1.035);
+    box-shadow: 0 20px 46px rgba(31, 45, 75, 0.2);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1125,8 +1148,7 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .atlas-welcome,
-  .atlas-dashboard-callout {
+  .atlas-welcome {
     grid-template-columns: 1fr;
     text-align: left;
   }
@@ -1135,5 +1157,12 @@ textarea {
     width: 9.5rem;
     right: 0.25rem;
     bottom: 0.2rem;
+  }
+
+  .atlas-corner-bubble {
+    right: 7.6rem;
+    top: 0.35rem;
+    width: min(11rem, 58vw);
+    font-size: 0.78rem;
   }
 }

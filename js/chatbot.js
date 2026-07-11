@@ -1,31 +1,31 @@
 export const suggestedQuestions = [
-  "How do I teach turn taking?",
-  "How can I reduce sensory overload?",
-  "Alternative AAC strategies?",
-  "Visual schedule ideas?",
-  "Positive reinforcement examples?"
+  "Si ta mësoj pritjen e radhës?",
+  "Si ta ul mbingarkesën shqisore?",
+  "Strategji alternative AAC?",
+  "Ide për orar vizual?",
+  "Shembuj për përforcim pozitiv?"
 ];
 
 const responseMap = [
   {
-    keywords: ["turn", "taking"],
-    answer: "Try a short, highly visible turn-taking routine: name the turn, show a my-turn/your-turn card, use a 30-second timer, and reinforce waiting before the student becomes frustrated. Start with a preferred activity so the practice feels meaningful."
+    keywords: ["radh", "prit", "turn", "taking"],
+    answer: "Provo një rutinë të shkurtër dhe shumë vizuale: emërto radhën, trego kartën radha ime/radha jote, përdor një kohëmatës 30 sekondash dhe përforco pritjen para se nxënësi të frustrohet. Fillo me një aktivitet të preferuar që ushtrimi të ketë kuptim."
   },
   {
-    keywords: ["sensory", "overload", "noise"],
-    answer: "Reduce sensory load by previewing noisy moments, offering headphones or a calm corner before escalation, lowering language demands, and using a visual break card. Track which setting, sound, and time of day appears most often."
+    keywords: ["shqisor", "mbingarkes", "zhurm", "sensory", "overload", "noise"],
+    answer: "Ule ngarkesën shqisore duke paralajmëruar momentet me zhurmë, duke ofruar kufje ose një kënd qetësie para përshkallëzimit, duke pakësuar kërkesat verbale dhe duke përdorur kartë vizuale për pushim. Shëno vendin, tingullin dhe orën kur ndodh më shpesh."
   },
   {
-    keywords: ["aac", "communication"],
-    answer: "Use aided language modeling: point to the AAC option while you speak, accept approximations, and avoid requiring the student to repeat after you. Keep core words available all day, not only during speech activities."
+    keywords: ["aac", "komunikim", "communication"],
+    answer: "Përdor modelim të gjuhës me mbështetje: trego opsionin AAC ndërsa flet, prano përpjekjet e përafërta dhe mos kërko që nxënësi të përsërisë menjëherë pas teje. Mbaji fjalët kryesore të disponueshme gjatë gjithë ditës, jo vetëm në aktivitetet e të folurit."
   },
   {
-    keywords: ["visual", "schedule"],
-    answer: "Make the schedule concrete and short. Use first/then for immediate tasks, a four-step strip for routines, and a full-day schedule only when the student can scan it calmly. Remove or mark completed items so progress is visible."
+    keywords: ["vizual", "orar", "visual", "schedule"],
+    answer: "Bëje orarin konkret dhe të shkurtër. Përdor së pari/pastaj për detyrat e menjëhershme, një shirit me katër hapa për rutinat dhe orar ditor vetëm kur nxënësi mund ta shohë me qetësi. Hiqi ose shëno gjërat e përfunduara që progresi të duket."
   },
   {
-    keywords: ["reinforcement", "positive", "reward"],
-    answer: "Choose reinforcement that matches the effort required. Name the exact behavior, deliver the reward quickly, and fade from tangible rewards toward choice, leadership roles, and specific praise as the skill becomes easier."
+    keywords: ["përforcim", "pozitiv", "shpërblim", "reinforcement", "positive", "reward"],
+    answer: "Zgjidh përforcim që përputhet me përpjekjen e kërkuar. Emërto sjelljen e saktë, jep shpërblimin shpejt dhe gradualisht kalo nga shpërblimet konkrete te zgjedhjet, rolet udhëheqëse dhe lavdërimi specifik kur aftësia bëhet më e lehtë."
   }
 ];
 
@@ -33,8 +33,8 @@ export async function teacherCoach(message, student) {
   await new Promise((resolve) => setTimeout(resolve, 700));
   const lower = message.toLowerCase();
   const match = responseMap.find((item) => item.keywords.every((keyword) => lower.includes(keyword)) || item.keywords.some((keyword) => lower.includes(keyword)));
-  const studentContext = student ? ` For ${student.name}, connect the strategy to their current goals and sensory profile.` : "";
-  return `${match?.answer || "Start by defining the target skill, choosing one prompt, and collecting a tiny piece of data each day. Keep the routine predictable, reinforce effort, and adjust only one variable at a time."}${studentContext}`;
+  const studentContext = student ? ` Për ${student.name}, lidhe strategjinë me objektivat aktuale dhe profilin shqisor.` : "";
+  return `${match?.answer || "Fillo duke përcaktuar aftësinë që do të mësosh, zgjidh një lloj ndihme dhe mblidh një të dhënë të vogël çdo ditë. Mbaje rutinën të parashikueshme, përforco përpjekjen dhe ndrysho vetëm një element në të njëjtën kohë."}${studentContext}`;
 }
 
 export function renderMarkdown(text) {

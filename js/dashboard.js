@@ -4,13 +4,13 @@ export function renderDashboard(state) {
   return `
     <section class="hero-panel fade-in">
       <div>
-        <p class="eyebrow">Classroom command center</p>
-        <h2>Welcome back, Ms. Carter</h2>
-        <p>Turn IEP and PIA information into clear supports, routines, family updates, and daily teaching decisions.</p>
+        <p class="eyebrow">Qendra e klasës</p>
+        <h2>Mirë se u kthyet, mësuese Carter</h2>
+        <p>Kthe informacionin e PIA/IEP në mbështetje të qarta, rutina, përditësime për familjen dhe vendime praktike për mësimdhënie.</p>
         <div class="hero-actions">
-          <button class="primary-button" data-route="upload">Upload Student Plan</button>
-          <button class="secondary-button" data-route="aac">Generate AAC Materials</button>
-          <button class="secondary-button" data-route="coach">Open AI Coach</button>
+          <button class="primary-button" data-route="upload">Ngarko planin e nxënësit</button>
+          <button class="secondary-button" data-route="aac">Krijo materiale AAC</button>
+          <button class="secondary-button" data-route="coach">Hap Atlasin</button>
         </div>
       </div>
       <div class="weekly-chart" aria-label="Weekly progress chart">
@@ -18,16 +18,16 @@ export function renderDashboard(state) {
       </div>
     </section>
     <section class="stats-grid">
-      ${statCard("Students", state.students.length, "Active profiles")}
-      ${statCard("Goals", student.longTermObjectives.length + student.immediateObjectives.length, "Current plan")}
-      ${statCard("Progress", `${progress.successAverage}%`, progress.trend)}
-      ${statCard("Saved Tools", state.savedTools.size, "Teacher toolkit")}
+      ${statCard("Nxënës", state.students.length, "Profile aktive")}
+      ${statCard("Objektiva", student.longTermObjectives.length + student.immediateObjectives.length, "Plani aktual")}
+      ${statCard("Progres", `${progress.successAverage}%`, progress.trend)}
+      ${statCard("Mjete të ruajtura", state.savedTools.size, "Paketa e mësuesit")}
     </section>
     <section class="dashboard-grid">
       <article class="glass-card">
         <div class="card-header">
-          <h3>Upcoming Goals</h3>
-          <button class="text-button" data-route="students">View profile</button>
+          <h3>Objektivat e radhës</h3>
+          <button class="text-button" data-route="students">Shiko profilin</button>
         </div>
         <ul class="clean-list">
           ${student.immediateObjectives.map((goal) => `<li><span class="status-dot"></span>${goal}</li>`).join("")}
@@ -35,8 +35,8 @@ export function renderDashboard(state) {
       </article>
       <article class="glass-card">
         <div class="card-header">
-          <h3>Recent Activity</h3>
-          <button class="text-button" data-route="progress">Track</button>
+          <h3>Aktivitetet e fundit</h3>
+          <button class="text-button" data-route="progress">Regjistro</button>
         </div>
         <ul class="activity-list">
           ${state.activity.map((item) => `<li><strong>${item.title}</strong><span>${item.detail}</span></li>`).join("")}
@@ -44,8 +44,8 @@ export function renderDashboard(state) {
       </article>
       <article class="glass-card wide-card">
         <div class="card-header">
-          <h3>Recent AI Recommendations</h3>
-          <button class="text-button" data-route="tools">Open matcher</button>
+          <h3>Rekomandimet e fundit nga AI</h3>
+          <button class="text-button" data-route="tools">Hap përputhësin</button>
         </div>
         <div class="recommendation-row">
           ${state.recommendations.slice(0, 3).map((tool) => `

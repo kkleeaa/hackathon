@@ -50,6 +50,7 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -76,6 +77,12 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+input,
+select,
+textarea {
+  font-size: 1rem;
 }
 
 button {
@@ -180,6 +187,7 @@ a:focus-visible {
   border: 0;
   border-radius: 14px;
   padding: 0.72rem;
+  min-height: 44px;
   color: var(--muted);
   background: transparent;
   text-align: left;
@@ -281,8 +289,8 @@ h3 {
 .icon-button {
   display: grid;
   place-items: center;
-  width: 2.55rem;
-  height: 2.55rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface-strong);
@@ -296,6 +304,7 @@ h3 {
 
 main {
   padding: clamp(1rem, 3vw, 2rem);
+  padding-bottom: clamp(7rem, 15vw, 11rem);
 }
 
 .view-root {
@@ -347,6 +356,7 @@ main {
   border-radius: 14px;
   padding: 0.72rem 1rem;
   font-weight: 800;
+  min-height: 44px;
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -818,6 +828,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.5rem 0.7rem;
+  min-height: 44px;
   background: var(--surface-strong);
   color: var(--text);
 }
@@ -871,6 +882,7 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.7rem;
+  min-height: 44px;
   background: var(--surface-strong);
   color: var(--text);
   text-align: left;
@@ -1123,9 +1135,29 @@ textarea {
 }
 
 @media (max-width: 760px) {
+  body {
+    min-width: 0;
+  }
+
   .topbar {
     display: grid;
     grid-template-columns: auto auto 1fr auto;
+    gap: 0.65rem;
+    min-height: auto;
+    padding: 0.72rem;
+  }
+
+  .title-block {
+    min-width: 0;
+  }
+
+  .title-block h1 {
+    font-size: 1rem;
+  }
+
+  main {
+    padding: 0.85rem;
+    padding-bottom: 11rem;
   }
 
   .search-shell {
@@ -1151,21 +1183,58 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .hero-panel,
+  .glass-card,
+  .stat-card,
+  .tool-card,
+  .profile-card,
+  .material-card,
+  .settings-panel {
+    padding: 0.9rem;
+  }
+
+  .hero-actions .primary-button,
+  .hero-actions .secondary-button,
+  .toolbar .primary-button,
+  .toolbar .secondary-button,
+  .report-actions .primary-button,
+  .report-actions .secondary-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .board-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chat-shell {
+    grid-template-rows: auto auto minmax(18rem, 58vh) auto;
+  }
+
+  .message {
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    max-width: 100%;
+  }
+
+  .message.teacher {
+    max-width: 92%;
+  }
+
   .atlas-welcome {
     grid-template-columns: 1fr;
     text-align: left;
   }
 
   .atlas-guide-widget {
-    width: 9.5rem;
-    right: 0.25rem;
-    bottom: 0.2rem;
+    width: 7.75rem;
+    right: max(0.2rem, env(safe-area-inset-right));
+    bottom: max(0.2rem, env(safe-area-inset-bottom));
   }
 
   .atlas-corner-bubble {
-    right: 8.25rem;
-    top: 0.35rem;
-    width: min(12rem, 62vw);
+    right: 6.8rem;
+    top: 0.2rem;
+    width: min(11.5rem, 66vw);
     font-size: 0.78rem;
   }
 }

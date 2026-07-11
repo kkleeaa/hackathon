@@ -1,9 +1,9 @@
 export const educationalTools = [
   {
     id: "aac-core-board",
-    title: "Core Word AAC Board",
+    title: "Tabela AAC me fjalë bazë",
     category: "AAC",
-    description: "A printable and tablet-friendly board that emphasizes high-frequency classroom words.",
+    description: "Tabelë e printueshme dhe e përshtatshme për tablet që thekson fjalët më të përdorura në klasë.",
     ageRange: "5-12",
     goal: "Functional communication",
     diagnosis: "Autism",
@@ -11,14 +11,14 @@ export const educationalTools = [
     cost: "Free",
     techLevel: "Low tech",
     image: "CW",
-    frequency: "Daily during transitions and routines",
-    notes: "Start with four core words and model without requiring immediate imitation."
+    frequency: "Çdo ditë gjatë kalimeve dhe rutinave",
+    notes: "Filloni me katër fjalë bazë dhe modeloni pa kërkuar imitim të menjëhershëm."
   },
   {
     id: "pecs-choice-strip",
-    title: "PECS Choice Strip",
+    title: "Shirit zgjedhjesh PECS",
     category: "PECS",
-    description: "A compact exchange strip for requesting breaks, help, activities, and classroom materials.",
+    description: "Shirit i vogël shkëmbimi për të kërkuar pushime, ndihmë, aktivitete dhe materiale klase.",
     ageRange: "3-10",
     goal: "Requesting",
     diagnosis: "Developmental delay",
@@ -26,14 +26,14 @@ export const educationalTools = [
     cost: "Free",
     techLevel: "No tech",
     image: "PC",
-    frequency: "Every choice-making opportunity",
-    notes: "Keep cards consistent and reinforce communication immediately."
+    frequency: "Në çdo mundësi për zgjedhje",
+    notes: "Mbajini kartat të qëndrueshme dhe përforconi komunikimin menjëherë."
   },
   {
     id: "visual-routine",
-    title: "First/Then Visual Schedule",
+    title: "Orar vizual së pari/pastaj",
     category: "Visual schedules",
-    description: "A simple visual organizer that reduces uncertainty and supports routine completion.",
+    description: "Organizues i thjeshtë vizual që ul pasigurinë dhe ndihmon përfundimin e rutinave.",
     ageRange: "4-14",
     goal: "Transitions",
     diagnosis: "Autism",
@@ -41,14 +41,14 @@ export const educationalTools = [
     cost: "Free",
     techLevel: "No tech",
     image: "VT",
-    frequency: "Before each transition",
-    notes: "Pair the visual with calm, brief language."
+    frequency: "Para çdo kalimi",
+    notes: "Përdoreni figurën bashkë me gjuhë të qetë dhe të shkurtër."
   },
   {
     id: "visual-timer",
-    title: "Color Countdown Timer",
+    title: "Kohëmatës me numërim mbrapsht me ngjyra",
     category: "Timers",
-    description: "A visual countdown for work periods, breaks, clean-up, and waiting.",
+    description: "Numërim vizual për kohën e punës, pushimet, pastrimin dhe pritjen.",
     ageRange: "5-16",
     goal: "Executive functioning",
     diagnosis: "ADHD",
@@ -56,14 +56,14 @@ export const educationalTools = [
     cost: "$",
     techLevel: "Mid tech",
     image: "TM",
-    frequency: "During timed work and breaks",
-    notes: "Preview what happens when the timer ends before starting it."
+    frequency: "Gjatë punës me kohë dhe pushimeve",
+    notes: "Shpjegoni paraprakisht çfarë ndodh kur mbaron kohëmatësi."
   },
   {
     id: "token-board",
-    title: "Five-Token Motivation Board",
+    title: "Tabela motivuese me pesë tokenë",
     category: "Token boards",
-    description: "A concrete progress system that connects effort to a meaningful reward.",
+    description: "Sistem konkret progresi që lidh përpjekjen me një shpërblim domethënës.",
     ageRange: "4-12",
     goal: "Positive reinforcement",
     diagnosis: "Behavior supports",
@@ -71,14 +71,14 @@ export const educationalTools = [
     cost: "Free",
     techLevel: "No tech",
     image: "TB",
-    frequency: "One target routine at a time",
-    notes: "Give tokens quickly and name the behavior you noticed."
+    frequency: "Një rutinë e synuar në të njëjtën kohë",
+    notes: "Jepni tokenët shpejt dhe emërtoni sjelljen që vërejtët."
   },
   {
     id: "noise-headphones",
-    title: "Noise-Reducing Headphones",
+    title: "Kufje për ulje zhurme",
     category: "Noise-canceling headphones",
-    description: "A sensory support for assemblies, cafeterias, bus loading, and unexpected noise.",
+    description: "Mbështetje shqisore për mbledhje, mensë, autobus dhe zhurma të papritura.",
     ageRange: "3-18",
     goal: "Sensory regulation",
     diagnosis: "Sensory processing",
@@ -86,14 +86,14 @@ export const educationalTools = [
     cost: "$$",
     techLevel: "Low tech",
     image: "NH",
-    frequency: "As needed with student choice",
-    notes: "Teach when and how to request them before a high-noise event."
+    frequency: "Sipas nevojës, me zgjedhjen e nxënësit",
+    notes: "Mësoni kur dhe si t'i kërkojë para një situate me shumë zhurmë."
   },
   {
     id: "fine-motor-kit",
-    title: "Fine Motor Games Kit",
+    title: "Paketë lojërash për motorikë fine",
     category: "Fine motor games",
-    description: "Clothespin, bead, tweezer, and play-dough activities for strengthening hand skills.",
+    description: "Aktivitete me kapëse, rruaza, pinceta dhe plastelinë për forcimin e aftësive të duarve.",
     ageRange: "4-11",
     goal: "Fine motor",
     diagnosis: "Developmental delay",
@@ -101,14 +101,14 @@ export const educationalTools = [
     cost: "$",
     techLevel: "No tech",
     image: "FM",
-    frequency: "10 minutes, three times weekly",
-    notes: "Rotate activities and stop before fatigue causes frustration."
+    frequency: "10 minuta, tri herë në javë",
+    notes: "Ndërroni aktivitetet dhe ndaloni para se lodhja të shkaktojë frustrim."
   },
   {
     id: "emotion-scale",
-    title: "Emotion Regulation Scale",
+    title: "Shkallë për rregullimin emocional",
     category: "Emotional regulation",
-    description: "A five-zone visual for naming feelings, matching strategies, and reflecting after incidents.",
+    description: "Figurë me pesë zona për emërtimin e ndjenjave, zgjedhjen e strategjive dhe reflektimin pas situatave.",
     ageRange: "6-18",
     goal: "Self-regulation",
     diagnosis: "ADHD",
@@ -116,8 +116,8 @@ export const educationalTools = [
     cost: "Free",
     techLevel: "No tech",
     image: "ER",
-    frequency: "Morning check-in and after challenging moments",
-    notes: "Practice when the student is calm, not only during escalation."
+    frequency: "Kontroll në mëngjes dhe pas momenteve sfiduese",
+    notes: "Praktikojeni kur nxënësi është i qetë, jo vetëm gjatë përshkallëzimit."
   }
 ];
 
@@ -152,17 +152,17 @@ function ageIsSupported(age, range) {
   return age >= min && age <= max;
 }
 
-export function generateLesson(tool, studentName = "the student") {
+export function generateLesson(tool, studentName = "nxënësi") {
   return {
-    title: `${tool.title} Mini Lesson`,
+    title: `Mësim i shkurtër: ${tool.title}`,
     steps: [
-      `Preview the purpose of ${tool.title} using one clear sentence.`,
-      `Model the tool while ${studentName} watches without performance pressure.`,
-      `Offer a supported turn with a visual cue and wait time.`,
-      `Reinforce the communication, regulation, or effort shown.`,
-      "Record one observation and adjust the prompt level for tomorrow."
+      `Shpjego qëllimin e "${tool.title}" me një fjali të qartë.`,
+      `Modelo mjetin ndërsa ${studentName} shikon pa presion për ta bërë menjëherë.`,
+      "Ofroni një radhë të mbështetur me sinjal vizual dhe kohë pritjeje.",
+      "Përforconi komunikimin, rregullimin ose përpjekjen e treguar.",
+      "Regjistroni një vëzhgim dhe përshtatni nivelin e ndihmës për nesër."
     ],
-    materials: [tool.title, "Visual cue", "Preferred reinforcer", "Observation notes"],
-    duration: "12-18 minutes"
+    materials: [tool.title, "Sinjal vizual", "Përforcues i preferuar", "Shënime vëzhgimi"],
+    duration: "12-18 minuta"
   };
 }

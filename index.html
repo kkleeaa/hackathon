@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="sq">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="AI-powered special education planning assistant for IEP, AAC, progress, and parent reports." />
-    <title>AI Special Education Assistant</title>
+    <meta name="description" content="Asistent me AI për edukim special, PIA, AAC, ndjekje progresi dhe raporte për prindër." />
+    <title>Asistenti AI për Edukim Special</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <a class="skip-link" href="#mainContent">Skip to content</a>
+    <a class="skip-link" href="#mainContent">Kalo te përmbajtja</a>
     <div class="app-shell">
-      <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <aside class="sidebar" id="sidebar" aria-label="Navigimi kryesor">
         <div class="sidebar-brand">
           <div class="brand-mark">AI</div>
           <div>
-            <strong>Special Ed</strong>
-            <span>Assistant</span>
+            <strong>Edukim Special</strong>
+            <span>Asistent</span>
           </div>
         </div>
         <nav class="nav-list" id="navList"></nav>
@@ -23,17 +23,17 @@
 
       <div class="workspace">
         <header class="topbar" role="banner">
-          <button class="icon-button menu-toggle" data-action="toggle-sidebar" aria-label="Toggle navigation">☰</button>
+          <button class="icon-button menu-toggle" data-action="toggle-sidebar" aria-label="Hap ose mbyll menunë">☰</button>
           <div class="brand-mark small" aria-hidden="true">AI</div>
           <div class="title-block">
-            <p class="eyebrow">AI Special Education Assistant</p>
-            <h1 id="pageTitle">Dashboard</h1>
+            <p class="eyebrow">Asistenti AI për Edukim Special</p>
+            <h1 id="pageTitle">Paneli</h1>
           </div>
           <label class="search-shell" for="globalSearch">
             <span aria-hidden="true">⌕</span>
-            <input id="globalSearch" type="search" placeholder="Search students, tools, reports..." autocomplete="off" />
+            <input id="globalSearch" type="search" placeholder="Kërko nxënës, mjete, raporte..." autocomplete="off" />
           </label>
-          <button class="icon-button" data-action="toggle-theme" aria-label="Toggle dark mode">◐</button>
+          <button class="icon-button" data-action="toggle-theme" aria-label="Ndrysho modalitetin e errët">◐</button>
         </header>
 
         <main id="mainContent" tabindex="-1">
@@ -42,22 +42,22 @@
         </main>
 
         <footer class="app-footer">
-          <p>Prototype data stays in memory only. Future AI and storage integrations should use encrypted, compliant services.</p>
+          <p>Të dhënat e prototipit qëndrojnë vetëm në memorie. Integrimet e ardhshme me AI dhe ruajtje duhet të përdorin shërbime të enkriptuara dhe të pajtueshme.</p>
         </footer>
       </div>
     </div>
 
-    <button class="atlas-guide-widget" data-route="coach" aria-label="Open Atlas AI chatbot">
-      <span class="atlas-corner-bubble">Hi, I'm Atlas. How can i help?</span>
-      <img class="atlas-standing-image" src="assets/images/atlas-standing-widget.png" alt="Atlas, AI chatbot guide" />
+    <button class="atlas-guide-widget" data-route="coach" aria-label="Hap bisedën me Atlas">
+      <span class="atlas-corner-bubble">Përshëndetje, jam Atlas. Si mund të ndihmoj?</span>
+      <img class="atlas-standing-image" src="assets/images/atlas-standing-widget.png" alt="Atlas, udhëzuesi i bisedës AI" />
     </button>
 
     <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
     <div class="modal-backdrop hidden" id="modalBackdrop" role="presentation">
       <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <button class="icon-button modal-close" data-action="close-modal" aria-label="Close modal">×</button>
-        <p class="eyebrow" id="modalEyebrow">Details</p>
-        <h2 id="modalTitle">Details</h2>
+        <button class="icon-button modal-close" data-action="close-modal" aria-label="Mbyll dritaren">×</button>
+        <p class="eyebrow" id="modalEyebrow">Detaje</p>
+        <h2 id="modalTitle">Detaje</h2>
         <div id="modalBody"></div>
       </section>
     </div>
@@ -65,8 +65,8 @@
     <template id="loadingTemplate">
       <div class="loading-state">
         <span class="spinner" aria-hidden="true"></span>
-        <strong>Reviewing the plan...</strong>
-        <p>Extracting goals, supports, and classroom recommendations.</p>
+        <strong>Duke shqyrtuar planin...</strong>
+        <p>Duke nxjerrë objektivat, mbështetjet dhe rekomandimet për klasë.</p>
       </div>
     </template>
 

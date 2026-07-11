@@ -1,56 +1,56 @@
 {
   "studentName": "Maya Johnson",
   "age": 8,
-  "diagnosis": "Autism spectrum disorder with sensory processing needs",
-  "communicationAbilities": "Uses short phrases, picture choices, and yes/no responses. Benefits from wait time and visual supports.",
+  "diagnosis": "Çrregullim i spektrit të autizmit me nevoja të përpunimit shqisor",
+  "communicationAbilities": "Përdor fraza të shkurtra, zgjedhje me figura dhe përgjigje po/jo. Përfiton nga koha e pritjes dhe mbështetjet vizuale.",
   "fineMotorGoals": [
-    "Improve pincer grasp for classroom tools",
-    "Cut along curved lines with adapted scissors",
-    "Write first name with consistent letter formation"
+    "Të përmirësojë kapjen me gishta për mjetet e klasës",
+    "Të presë përgjatë vijave të lakuara me gërshërë të përshtatura",
+    "Të shkruajë emrin me formim të qëndrueshëm të shkronjave"
   ],
   "grossMotorGoals": [
-    "Follow a three-step movement routine",
-    "Increase balance during playground transitions"
+    "Të ndjekë një rutinë lëvizjeje me tre hapa",
+    "Të rrisë ekuilibrin gjatë kalimeve në këndin e lojës"
   ],
   "speechGoals": [
-    "Use a five-word request with visual support",
-    "Answer who/what/where questions after a story"
+    "Të përdorë kërkesë me pesë fjalë me mbështetje vizuale",
+    "T'u përgjigjet pyetjeve kush/çfarë/ku pas një tregimi"
   ],
   "sensoryNeeds": [
-    "Noise reduction during assemblies",
-    "Movement breaks every 45 minutes",
-    "Access to calm corner after unexpected changes"
+    "Ulja e zhurmës gjatë mbledhjeve",
+    "Pushime lëvizjeje çdo 45 minuta",
+    "Qasje në kënd të qetë pas ndryshimeve të papritura"
   ],
   "behaviorTriggers": [
-    "Loud transitions",
-    "Unexpected schedule changes",
-    "Long writing tasks without breaks"
+    "Kalime me zhurmë",
+    "Ndryshime të papritura të orarit",
+    "Detyra të gjata shkrimi pa pushime"
   ],
   "preferredReinforcers": [
-    "Sticker choice",
-    "Drawing time",
-    "Five-minute puzzle",
-    "Choice of classroom helper job"
+    "Zgjedhje ngjitëseje",
+    "Kohë për vizatim",
+    "Puzzle pesëminutëshe",
+    "Zgjedhje e rolit ndihmës në klasë"
   ],
   "immediateObjectives": [
-    "Use a first/then board during writing block",
-    "Request a break using a picture card",
-    "Complete hand washing sequence with two prompts or fewer"
+    "Të përdorë tabelën së pari/pastaj gjatë kohës së shkrimit",
+    "Të kërkojë pushim duke përdorur kartë me figurë",
+    "Të përfundojë sekuencën e larjes së duarve me dy udhëzime ose më pak"
   ],
   "longTermObjectives": [
-    "Independently use visual schedule across the school day",
-    "Communicate needs using speech, AAC, or picture exchange",
-    "Complete self-care routines with minimal adult prompting"
+    "Të përdorë në mënyrë të pavarur orarin vizual gjatë ditës shkollore",
+    "Të komunikojë nevojat me të folur, AAC ose shkëmbim figurash",
+    "Të kryejë rutinat e kujdesit personal me pak udhëzim nga i rrituri"
   ],
   "strengths": [
-    "Strong visual memory",
-    "Enjoys helping peers",
-    "Responds well to predictable routines",
-    "Curious about science and art"
+    "Kujtesë e fortë vizuale",
+    "I pëlqen të ndihmojë shokët",
+    "Përgjigjet mirë ndaj rutinave të parashikueshme",
+    "Ka kureshtje për shkencën dhe artin"
   ],
   "challenges": [
-    "Difficulty with noisy settings",
-    "Needs support initiating peer play",
-    "Writing stamina is limited"
+    "Vështirësi në mjedise me zhurmë",
+    "Ka nevojë për mbështetje për të nisur lojën me shokët",
+    "Qëndrueshmëria në shkrim është e kufizuar"
   ]
 }

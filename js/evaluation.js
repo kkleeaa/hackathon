@@ -10,7 +10,7 @@ export function createProgressEntry(formData) {
     communication: Number(formData.communication),
     independence: Number(formData.independence),
     notes: formData.notes,
-    mood: formData.mood || "Calm"
+    mood: formData.mood || "I/e qetë"
   };
 }
 
@@ -20,8 +20,8 @@ export function summarizeProgress(entries) {
       successAverage: 0,
       communicationAverage: 0,
       independenceAverage: 0,
-      trend: "No data yet",
-      badges: ["Ready to begin"]
+      trend: "Nuk ka të dhëna ende",
+      badges: ["Gati për të filluar"]
     };
   }
 
@@ -34,40 +34,40 @@ export function summarizeProgress(entries) {
     independenceAverage: avg("independence"),
     attentionAverage: avg("attention"),
     behaviorAverage: avg("behavior"),
-    trend: last >= first ? "Improving" : "Needs review",
+    trend: last >= first ? "Në përmirësim" : "Duhet rishikuar",
     badges: buildBadges(entries, avg("success"))
   };
 }
 
 function buildBadges(entries, successAverage) {
   const badges = [];
-  if (entries.length >= 3) badges.push("Consistent tracking");
-  if (successAverage >= 75) badges.push("Goal momentum");
-  if (entries.some((entry) => entry.independence >= 80)) badges.push("Independent step");
-  if (!badges.length) badges.push("First observation logged");
+  if (entries.length >= 3) badges.push("Ndjekje e qëndrueshme");
+  if (successAverage >= 75) badges.push("Ritëm i mirë drejt objektivit");
+  if (entries.some((entry) => entry.independence >= 80)) badges.push("Hap i pavarur");
+  if (!badges.length) badges.push("Vëzhgimi i parë u regjistrua");
   return badges;
 }
 
 export function generateParentReport(student, entries) {
   const summary = summarizeProgress(entries);
   return {
-    title: `${student.name}'s Learning Update`,
+    title: `Përditësim i të nxënit për ${student.name}`,
     strengths: [
-      `${student.name} is showing strengths in ${student.strengths[0]?.toLowerCase() || "using classroom supports"}.`,
-      `They respond well when adults use predictable routines and clear visuals.`
+      `${student.name} po tregon pika të forta në ${student.strengths[0]?.toLowerCase() || "përdorimin e mbështetjeve në klasë"}.`,
+      "Përgjigjet mirë kur të rriturit përdorin rutina të parashikueshme dhe figura të qarta."
     ],
     improving: [
-      `Recent notes show ${summary.trend.toLowerCase()} progress toward current classroom goals.`,
-      `${student.name} is practicing communication and independence in daily routines.`
+      `Shënimet e fundit tregojnë: ${summary.trend.toLowerCase()} drejt objektivave aktuale të klasës.`,
+      `${student.name} po praktikon komunikimin dhe pavarësinë në rutinat e përditshme.`
     ],
     support: [
-      "Transitions are easier when changes are previewed.",
-      "Short practice sessions with encouragement work better than long tasks."
+      "Kalimet janë më të lehta kur ndryshimet paralajmërohen më herët.",
+      "Seancat e shkurtra me inkurajim funksionojnë më mirë se detyrat e gjata."
     ],
     homeActivities: [
-      "Use a first/then phrase for one evening routine.",
-      "Offer two clear choices and wait quietly for a response.",
-      "Celebrate effort with specific praise, such as: You asked for help."
+      "Përdorni shprehjen së pari/pastaj për një rutinë në mbrëmje.",
+      "Ofroni dy zgjedhje të qarta dhe prisni qetësisht përgjigjen.",
+      "Festoni përpjekjen me lavdërim specifik, p.sh.: Kërkove ndihmë."
     ],
     summary
   };

@@ -950,12 +950,23 @@ textarea {
     linear-gradient(135deg, color-mix(in srgb, var(--atlas-blue) 34%, white), var(--surface-strong));
   color: var(--text);
   box-shadow: 0 18px 42px color-mix(in srgb, var(--atlas-blue-strong) 24%, rgba(31, 45, 75, 0.2));
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transform-origin: 82% 100%;
+  animation: atlasPopOut 680ms cubic-bezier(0.2, 1.35, 0.35, 1) both, atlasFloat 4.8s ease-in-out 900ms infinite;
+  transition: box-shadow 180ms ease, filter 180ms ease;
 }
 
 .atlas-launcher:hover {
-  transform: translateY(-4px) scale(1.01);
   box-shadow: 0 24px 54px color-mix(in srgb, var(--atlas-blue-strong) 32%, rgba(31, 45, 75, 0.24));
+  filter: saturate(1.05);
+  animation-play-state: paused;
+}
+
+.atlas-launcher:hover img {
+  animation: atlasExcited 850ms ease-in-out infinite;
+}
+
+.atlas-launcher:hover .atlas-wave-paw {
+  animation-duration: 650ms;
 }
 
 .atlas-launcher img {
@@ -965,11 +976,31 @@ textarea {
   object-fit: cover;
   object-position: 52% 38%;
   border: 3px solid color-mix(in srgb, var(--atlas-gold) 72%, white);
+  transform-origin: 50% 88%;
+  animation: atlasPeek 5.2s ease-in-out 1.1s infinite;
+  will-change: transform;
 }
 
-.atlas-launcher span:not(.atlas-launcher-light) {
+.atlas-launcher > span:not(.atlas-launcher-light):not(.atlas-wave-paw) {
   font-weight: 900;
   white-space: nowrap;
+}
+
+.atlas-wave-paw {
+  position: absolute;
+  left: 3.1rem;
+  top: 0.82rem;
+  width: 1.15rem;
+  height: 1.45rem;
+  border-radius: 999px 999px 0.75rem 0.75rem;
+  background:
+    radial-gradient(circle at 50% 24%, var(--atlas-peach) 0 18%, transparent 20%),
+    linear-gradient(180deg, #c8e8f4, var(--atlas-blue));
+  border: 2px solid color-mix(in srgb, var(--atlas-blue-strong) 54%, var(--surface-strong));
+  box-shadow: 0 0.3rem 0.7rem rgba(38, 56, 74, 0.16);
+  transform-origin: 50% 100%;
+  animation: atlasWave 2.2s ease-in-out 1.35s infinite;
+  pointer-events: none;
 }
 
 .atlas-launcher-light {
@@ -985,6 +1016,7 @@ textarea {
   color: transparent;
   border: 2px solid var(--surface-strong);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--atlas-gold) 55%, transparent);
+  animation: atlasGlow 1.8s ease-in-out infinite;
 }
 
 .atlas-launcher-light::before {
@@ -1074,6 +1106,99 @@ textarea {
   }
 }
 
+@keyframes atlasPopOut {
+  0% {
+    opacity: 0;
+    transform: translateY(2rem) scale(0.68) rotate(10deg);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-0.55rem) scale(1.08) rotate(-3deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes atlasFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  45% {
+    transform: translateY(-0.38rem) rotate(-1deg);
+  }
+  72% {
+    transform: translateY(-0.15rem) rotate(1deg);
+  }
+}
+
+@keyframes atlasPeek {
+  0%,
+  72%,
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  78% {
+    transform: translateY(-0.16rem) rotate(-4deg) scale(1.04);
+  }
+  86% {
+    transform: translateY(0) rotate(3deg) scale(1.02);
+  }
+}
+
+@keyframes atlasExcited {
+  0%,
+  100% {
+    transform: rotate(-2deg) scale(1.03);
+  }
+  50% {
+    transform: rotate(3deg) scale(1.08);
+  }
+}
+
+@keyframes atlasWave {
+  0%,
+  45%,
+  100% {
+    transform: rotate(-8deg) translateY(0);
+  }
+  55% {
+    transform: rotate(22deg) translateY(-0.08rem);
+  }
+  65% {
+    transform: rotate(-18deg) translateY(0);
+  }
+  75% {
+    transform: rotate(18deg) translateY(-0.06rem);
+  }
+}
+
+@keyframes atlasGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--atlas-gold) 55%, transparent),
+      0 0 0.4rem color-mix(in srgb, var(--atlas-gold) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--atlas-gold) 55%, transparent),
+      0 0 1rem color-mix(in srgb, var(--atlas-gold) 72%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @media (max-width: 1100px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -1147,7 +1272,7 @@ textarea {
     padding: 0.35rem;
   }
 
-  .atlas-launcher span:not(.atlas-launcher-light) {
+  .atlas-launcher > span:not(.atlas-launcher-light):not(.atlas-wave-paw) {
     position: absolute;
     width: 1px;
     height: 1px;

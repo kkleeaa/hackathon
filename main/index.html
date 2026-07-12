@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Asistent me AI për edukim special, PIA, AAC, ndjekje progresi dhe raporte për prindër." />
-    <title>Asistenti AI për Edukim Special</title>
+    <meta name="description" content="PlanifikoMeAtlas — hapësirë e ngrohtë për planifikim, profile, orare dhe raporte." />
+    <title>PlanifikoMeAtlas</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -12,8 +12,8 @@
       <form class="api-key-card" id="apiKeyForm">
         <div class="brand-mark" aria-hidden="true">AI</div>
         <p class="eyebrow">Konfigurimi fillestar</p>
-        <h1>Lidhni OpenAI</h1>
-        <p>Vendosni API key për të aktivizuar funksionet AI te Tabela e komunikimit.</p>
+        <h1>AtlasPlan</h1>
+        <p>Asistenti juaj i thjeshtë për planet IEP dhe PIA.</p>
         <label class="field" for="apiKeyInput">
           <span>OpenAI API key</span>
           <input
@@ -27,20 +27,39 @@
             required
           />
         </label>
+        <label class="privacy-consent" for="privacyConsent">
+          <input id="privacyConsent" type="checkbox" required />
+          <span>
+            Pajtohem me
+            <a href="#politikaPrivatesise" id="privacyPolicyLink">Politikën e Privatësisë</a>.
+            Të dhënat e fëmijëve janë plotësisht konfidenciale.
+          </span>
+        </label>
         <p class="api-key-error hidden" id="apiKeyError" role="alert">Vendosni një API key të vlefshëm.</p>
-        <button class="primary-button" type="submit">Hap aplikacionin</button>
+        <button class="primary-button" id="openAppButton" type="submit" disabled>Hap aplikacionin</button>
         <small>Key ruhet vetëm në memorien e këtij tab-i dhe nuk shkruhet në skedarë ose në GitHub.</small>
       </form>
     </div>
 
+    <div class="privacy-sticker-backdrop hidden" id="privacyStickerBackdrop">
+      <section class="privacy-sticker" role="dialog" aria-modal="true" aria-labelledby="privacyStickerTitle">
+        <button class="privacy-sticker-close" id="privacyStickerClose" type="button" aria-label="Mbyll politikën e privatësisë">×</button>
+        <p class="eyebrow">Privatësia</p>
+        <h2 id="privacyStickerTitle">Politika e Privatësisë</h2>
+        <p>API key mbahet vetëm në këtë tab dhe nuk ruhet në GitHub.</p>
+        <p>Të dhënat e fëmijëve trajtohen si konfidenciale dhe përdoren vetëm për funksionet që aktivizon mësuesja.</p>
+        <button class="privacy-sticker-accept" id="privacyStickerAccept" type="button">E kuptova</button>
+      </section>
+    </div>
+
     <a class="skip-link" href="#mainContent">Kalo te përmbajtja</a>
-    <div class="app-shell">
+    <div class="app-shell" inert>
       <aside class="sidebar" id="sidebar" aria-label="Navigimi kryesor">
         <div class="sidebar-brand">
           <div class="brand-mark">AI</div>
           <div>
-            <strong>Edukim Special</strong>
-            <span>Asistent</span>
+            <strong>PlanifikoMeAtlas</strong>
+            <span>Asistentja e klasës</span>
           </div>
         </div>
         <nav class="nav-list" id="navList"></nav>
@@ -51,7 +70,7 @@
           <button class="icon-button menu-toggle" data-action="toggle-sidebar" aria-label="Hap ose mbyll menunë">☰</button>
           <div class="brand-mark small" aria-hidden="true">AI</div>
           <div class="title-block">
-            <p class="eyebrow">Asistenti AI për Edukim Special</p>
+            <p class="eyebrow">PlanifikoMeAtlas</p>
             <h1 id="pageTitle">Paneli</h1>
           </div>
           <label class="search-shell" for="globalSearch">
@@ -72,7 +91,7 @@
       </div>
     </div>
 
-    <button class="atlas-guide-widget" data-route="coach" aria-label="Hap bisedën me Atlas">
+    <button class="atlas-guide-widget" data-route="coach" aria-label="Hap bisedën me Atlas" inert>
       <span class="atlas-corner-bubble">Përshëndetje, jam Atlas. Si mund të ndihmoj?</span>
       <img class="atlas-standing-image" src="assets/images/atlas-standing-widget.png" alt="Atlas, udhëzuesi i bisedës AI" />
     </button>
@@ -90,8 +109,9 @@
     <template id="loadingTemplate">
       <div class="loading-state">
         <span class="spinner" aria-hidden="true"></span>
-        <strong>Duke shqyrtuar planin...</strong>
-        <p>Duke nxjerrë objektivat, mbështetjet dhe rekomandimet për klasë.</p>
+        <strong>Analizuesi po e shqyrton planin me kujdes...</strong>
+        <p>Po anonimizohen të dhënat dhe po përgatitet përmbledhja.</p>
+        <span class="analysis-progress" aria-hidden="true"><span></span></span>
       </div>
     </template>
 

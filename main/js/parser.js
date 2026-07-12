@@ -1,7 +1,12 @@
 export class Student {
   constructor(data) {
     this.id = data.id || crypto.randomUUID();
-    this.name = data.studentName || data.name || "Nxënës i ri";
+    this.nickname = data.nickname || data.pseudonym || data.studentName || data.name || "Nxënës i ri";
+    this.name = this.nickname;
+    this.initials = data.initials || "N.X.";
+    this.birthday = data.birthday || "Nuk është shënuar";
+    this.animal = data.animal || "bear";
+    this.learningStyle = data.learningStyle || data.communicationAbilities || data.communication || "Përfiton nga udhëzimet e qarta dhe rutinat e parashikueshme.";
     this.age = data.age || "Nuk është specifikuar";
     this.diagnosis = data.diagnosis || "Profili duhet rishikuar";
     this.communication = data.communicationAbilities || data.communication || "Profili i komunikimit është në pritje";
@@ -10,6 +15,7 @@ export class Student {
     this.speechGoals = data.speechGoals || [];
     this.sensoryNeeds = data.sensoryNeeds || [];
     this.behaviorTriggers = data.behaviorTriggers || [];
+    this.allergies = data.allergies || ["Nuk janë shënuar alergji"];
     this.reinforcers = data.preferredReinforcers || data.reinforcers || [];
     this.immediateObjectives = data.immediateObjectives || [];
     this.longTermObjectives = data.longTermObjectives || [];
@@ -22,14 +28,37 @@ export class Student {
   }
 }
 
-const diagnosisHints = [
-  "autism",
-  "adhd",
-  "developmental delay",
-  "speech-language impairment",
-  "sensory processing",
-  "intellectual disability"
+const medicalTerms = [
+  /\bADHD\b/gi,
+  /\bADD\b/gi,
+  /\bautiz(?:ëm|mi|mit)?\b/gi,
+  /\bautism(?: spectrum disorder)?\b/gi,
+  /\bçrregullim(?:i)?\s+i\s+spektrit\s+të\s+autizmit\b/gi,
+  /\bdevelopmental delay\b/gi,
+  /\bintellectual disability\b/gi,
+  /\bspeech-language impairment\b/gi
 ];
+
+export function sanitizePlanText(sourceText = "") {
+  const anonymized = sourceText
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(diagnoza|diagnosis)\s*:/i.test(line))
+    .map((line) => {
+      if (/^\s*(emri i nxënësit|emri|student name|name)\s*:/i.test(line)) {
+        return "Pseudonimi: Nxënësi A";
+      }
+      return line;
+    })
+    .join("\n")
+    .replace(/\b(nxënësi|studenti|fëmija)\s+[A-ZÇË][a-zçë]+(?:\s+[A-ZÇË][a-zçë]+)?/g, "Nxënësi A")
+    .replace(/\b[A-ZÇË]\.[A-ZÇË]\./g, "N.X.");
+
+  return medicalTerms
+    .reduce((text, pattern) => text.replace(pattern, ""), anonymized)
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([,.;:])/g, "$1")
+    .trim();
+}
 
 function pickProfileColor(name) {
   const colors = ["#5b7cfa", "#10a37f", "#ff8c42", "#b052ff", "#0ea5e9"];
@@ -53,33 +82,28 @@ function sentenceMatches(text, words) {
 
 export async function parseIEP(sourceText = "", fileName = "") {
   await new Promise((resolve) => setTimeout(resolve, 900));
-  const text = sourceText.trim();
+  const text = sanitizePlanText(sourceText);
   const lower = text.toLowerCase();
-  const name = findLineValue(text, ["Student Name", "Name", "Emri i nxënësit", "Emri"]) || inferNameFromFile(fileName);
   const age = Number(findLineValue(text, ["Age", "Mosha"])) || (lower.includes("third grade") ? 8 : 9);
-  const diagnosis = findLineValue(text, ["Diagnosis", "Diagnoza"]) || diagnosisHints.find((hint) => lower.includes(hint)) || "Profili i të nxënit pret rishikimin e mësuesit";
+  const communication = findLineValue(text, ["Communication", "Communication Abilities", "Komunikimi", "Aftësitë e komunikimit"]) || "Përfiton nga përgjigjet e shkurtra, zgjedhjet vizuale dhe rutinat e parashikueshme.";
 
   return {
-    studentName: name || "Jordan Rivera",
+    studentName: "Nxënësi A",
     age,
-    diagnosis,
-    communicationAbilities: findLineValue(text, ["Communication", "Communication Abilities", "Komunikimi", "Aftësitë e komunikimit"]) || "Përdor përgjigje të shkurtra verbale, gjeste dhe zgjedhje vizuale kur rutinat janë të parashikueshme.",
+    diagnosis: "Profil mësimor",
+    learningStyle: communication,
+    communicationAbilities: communication,
     fineMotorGoals: sentenceMatches(text, ["fine motor", "writing", "cut", "grip"]).slice(0, 3),
     grossMotorGoals: sentenceMatches(text, ["gross motor", "balance", "movement", "playground"]).slice(0, 3),
     speechGoals: sentenceMatches(text, ["speech", "language", "request", "answer"]).slice(0, 3),
-    sensoryNeeds: sentenceMatches(text, ["sensory", "noise", "movement", "calm"]).slice(0, 4),
+    sensoryNeeds: [],
     behaviorTriggers: sentenceMatches(text, ["trigger", "frustrat", "transition", "unexpected"]).slice(0, 4),
     preferredReinforcers: sentenceMatches(text, ["reinforcer", "reward", "favorite", "choice"]).slice(0, 4),
-    immediateObjectives: sentenceMatches(text, ["objective", "short-term", "prompt", "daily"]).slice(0, 4),
-    longTermObjectives: sentenceMatches(text, ["long-term", "annual", "independent", "goal"]).slice(0, 4),
-    strengths: sentenceMatches(text, ["strength", "enjoy", "responds well", "prefers"]).slice(0, 4),
-    challenges: sentenceMatches(text, ["difficulty", "needs support", "challenge", "struggle"]).slice(0, 4)
+    immediateObjectives: sentenceMatches(text, ["objective", "objektivi", "short-term", "i menjëhershëm", "prompt", "daily"]).slice(0, 4),
+    longTermObjectives: sentenceMatches(text, ["long-term", "afatgjatë", "annual", "independent", "goal", "qëllim"]).slice(0, 4),
+    strengths: sentenceMatches(text, ["strength", "pikë e fortë", "pikat e forta", "enjoy", "responds well", "prefers", "pëlqen"]).slice(0, 4),
+    challenges: sentenceMatches(text, ["difficulty", "vështirësi", "needs support", "ka nevojë", "challenge", "sfidë", "struggle"]).slice(0, 4)
   };
-}
-
-function inferNameFromFile(fileName) {
-  if (!fileName) return "";
-  return fileName.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").replace(/\biep\b|\bpia\b/gi, "").trim();
 }
 
 export function normalizeParsedStudent(data) {

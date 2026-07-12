@@ -3,14 +3,8 @@ export function createProgressEntry(formData) {
     id: crypto.randomUUID(),
     date: formData.date || new Date().toISOString().slice(0, 10),
     goal: formData.goal,
-    activity: formData.activity,
-    success: Number(formData.success),
-    behavior: Number(formData.behavior),
-    attention: Number(formData.attention),
-    communication: Number(formData.communication),
-    independence: Number(formData.independence),
-    notes: formData.notes,
-    mood: formData.mood || "I/e qetë"
+    result: formData.result || formData.notes || "Rezultati nuk është shënuar",
+    notes: formData.notes || ""
   };
 }
 
@@ -20,32 +14,22 @@ export function summarizeProgress(entries) {
       successAverage: 0,
       communicationAverage: 0,
       independenceAverage: 0,
-      trend: "Nuk ka të dhëna ende",
+      trend: "Nuk ka rezultate ende",
+      count: 0,
       badges: ["Gati për të filluar"]
     };
   }
 
-  const avg = (field) => Math.round(entries.reduce((sum, entry) => sum + entry[field], 0) / entries.length);
-  const first = entries[0]?.success || 0;
-  const last = entries[entries.length - 1]?.success || 0;
   return {
-    successAverage: avg("success"),
-    communicationAverage: avg("communication"),
-    independenceAverage: avg("independence"),
-    attentionAverage: avg("attention"),
-    behaviorAverage: avg("behavior"),
-    trend: last >= first ? "Në përmirësim" : "Duhet rishikuar",
-    badges: buildBadges(entries, avg("success"))
+    successAverage: 0,
+    communicationAverage: 0,
+    independenceAverage: 0,
+    attentionAverage: 0,
+    behaviorAverage: 0,
+    trend: "Progres i dokumentuar",
+    count: entries.length,
+    badges: entries.length >= 3 ? ["Dokumentim i rregullt"] : ["Rezultati u regjistrua"]
   };
-}
-
-function buildBadges(entries, successAverage) {
-  const badges = [];
-  if (entries.length >= 3) badges.push("Ndjekje e qëndrueshme");
-  if (successAverage >= 75) badges.push("Ritëm i mirë drejt objektivit");
-  if (entries.some((entry) => entry.independence >= 80)) badges.push("Hap i pavarur");
-  if (!badges.length) badges.push("Vëzhgimi i parë u regjistrua");
-  return badges;
 }
 
 export function generateParentReport(student, entries) {
@@ -57,9 +41,12 @@ export function generateParentReport(student, entries) {
       "Përgjigjet mirë kur të rriturit përdorin rutina të parashikueshme dhe figura të qarta."
     ],
     improving: [
-      `Shënimet e fundit tregojnë: ${summary.trend.toLowerCase()} drejt objektivave aktuale të klasës.`,
+      `Janë dokumentuar ${summary.count} rezultate për objektivat aktuale të klasës.`,
       `${student.name} po praktikon komunikimin dhe pavarësinë në rutinat e përditshme.`
     ],
+    achievements: entries.length
+      ? entries.slice().reverse().map((entry) => `${entry.date} – ${entry.goal}: ${entry.result}`)
+      : ["Nuk ka rezultate të regjistruara ende."],
     support: [
       "Kalimet janë më të lehta kur ndryshimet paralajmërohen më herët.",
       "Seancat e shkurtra me inkurajim funksionojnë më mirë se detyrat e gjata."

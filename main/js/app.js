@@ -1,5 +1,5 @@
 import { renderDashboard } from "./dashboard.js";
-import { parseIEP, normalizeParsedStudent, Student, placeholderEncryptedStorage } from "./parser.js";
+import { parseIEP, normalizeParsedStudent, sanitizePlanText, Student, placeholderEncryptedStorage } from "./parser.js";
 import { educationalTools, recommendTools, generateLesson } from "./toolMatcher.js";
 import { generateAAC, materialToMarkdown } from "./aacGenerator.js";
 import { suggestedQuestions, teacherCoach, renderMarkdown } from "./chatbot.js";
@@ -9,11 +9,8 @@ const routes = [
   ["dashboard", "PN", "Paneli"],
   ["students", "NX", "Profilet e nxënësve"],
   ["upload", "PI", "Ngarko PIA"],
-  ["aac", "AA", "Gjeneratori AAC"],
   ["tools", "MJ", "Paketa e mësimdhënies"],
-  ["assistive", "TA", "Teknologji ndihmëse"],
-  ["sensory", "SH", "Mbështetje shqisore"],
-  ["schedules", "OV", "Oraret vizuale"],
+  ["schedules", "OR", "Orari"],
   ["boards", "TK", "Tabela komunikimi"],
   ["progress", "PR", "Ndjekja e progresit"],
   ["reports", "RP", "Raporte për prindër"],
@@ -25,18 +22,46 @@ const state = {
   route: "dashboard",
   students: [],
   currentStudent: null,
+  studentProfileOpen: false,
+  reportPreviewOpen: false,
   activity: [],
   recommendations: [],
   savedTools: new Set(),
   favoriteTools: new Set(),
   compareTools: new Set(),
   progressEntries: [],
+  progressByStudent: {},
   progressSummary: summarizeProgress([]),
   chatMessages: [],
+  completedGoals: new Set(),
   lastMaterial: null,
   selectedMood: "I/e qetë",
+  scheduleDay: 0,
+  scheduleWeekOffset: 0,
+  scheduleByStudent: {},
   theme: "light"
 };
+
+const scheduleDays = ["E hënë", "E martë", "E mërkurë", "E enjte", "E premte"];
+
+function createInitialSchedule() {
+  const activities = [
+    ["Mirëseardhja", "Lexim", "Matematikë", "Pushim", "Art dhe krijimtari"],
+    ["Rrethi i mëngjesit", "Gjuhë shqipe", "Shkencë", "Pushim", "Lojë e udhëhequr"],
+    ["Mirëseardhja", "Matematikë", "Lexim", "Pushim", "Muzikë"],
+    ["Rrethi i mëngjesit", "Shkencë", "Gjuhë shqipe", "Pushim", "Punë në grup"],
+    ["Planifikimi i ditës", "Lexim", "Matematikë", "Pushim", "Reflektim javor"]
+  ];
+  const times = [["08:00", "08:45"], ["08:45", "09:30"], ["09:45", "10:30"], ["10:30", "11:00"], ["11:00", "11:45"]];
+  return activities.map((day, dayIndex) => day.map((activity, slotIndex) => ({
+    id: `${dayIndex}-${slotIndex}`,
+    start: times[slotIndex][0],
+    end: times[slotIndex][1],
+    activity,
+    goal: "",
+    completed: false
+  })));
+}
 
 const root = document.getElementById("viewRoot");
 const navList = document.getElementById("navList");
@@ -53,14 +78,46 @@ const apiKeyGate = document.getElementById("apiKeyGate");
 const apiKeyForm = document.getElementById("apiKeyForm");
 const apiKeyInput = document.getElementById("apiKeyInput");
 const apiKeyError = document.getElementById("apiKeyError");
+const privacyConsent = document.getElementById("privacyConsent");
+const privacyPolicyLink = document.getElementById("privacyPolicyLink");
+const privacyStickerBackdrop = document.getElementById("privacyStickerBackdrop");
+const privacyStickerClose = document.getElementById("privacyStickerClose");
+const privacyStickerAccept = document.getElementById("privacyStickerAccept");
+const openAppButton = document.getElementById("openAppButton");
 let openAIApiKey = "";
 
 apiKeyForm.addEventListener("submit", handleApiKeySubmit);
+privacyConsent.addEventListener("change", () => {
+  openAppButton.disabled = !privacyConsent.checked;
+});
+privacyPolicyLink.addEventListener("click", openPrivacySticker);
+privacyStickerClose.addEventListener("click", closePrivacySticker);
+privacyStickerAccept.addEventListener("click", closePrivacySticker);
+privacyStickerBackdrop.addEventListener("click", (event) => {
+  if (event.target === privacyStickerBackdrop) closePrivacySticker();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !privacyStickerBackdrop.classList.contains("hidden")) closePrivacySticker();
+});
 apiKeyInput.focus();
+
+function openPrivacySticker(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  privacyStickerBackdrop.classList.remove("hidden");
+  privacyStickerClose.focus();
+}
+
+function closePrivacySticker() {
+  privacyStickerBackdrop.classList.add("hidden");
+  privacyPolicyLink.focus();
+}
 
 function handleApiKeySubmit(event) {
   event.preventDefault();
   const key = apiKeyInput.value.trim();
+
+  if (!privacyConsent.checked) return;
 
   if (!/^sk-[A-Za-z0-9_-]{16,}$/.test(key)) {
     apiKeyError.classList.remove("hidden");
@@ -72,19 +129,22 @@ function handleApiKeySubmit(event) {
   apiKeyInput.value = "";
   apiKeyError.classList.add("hidden");
   apiKeyGate.classList.add("hidden");
+  document.querySelector(".app-shell").removeAttribute("inert");
+  document.querySelector(".atlas-guide-widget").removeAttribute("inert");
   init();
 }
 
 async function init() {
   renderNavigation();
   const sample = await loadSampleStudent();
-  state.students = [new Student(sample)];
+  state.students = createPrivacySafeStudents(sample);
   state.currentStudent = state.students[0];
+  state.scheduleByStudent = Object.fromEntries(state.students.map((student) => [student.id, createInitialSchedule()]));
   seedProgress();
+  state.progressByStudent = Object.fromEntries(state.students.map((student, index) => [student.id, index === 0 ? state.progressEntries : []]));
   refreshDerivedState();
   state.activity = [
     { title: "Profili shembull u ngarkua", detail: `Plani mbështetës për ${state.currentStudent.name} është gati.` },
-    { title: "Drafti AAC u përgatit", detail: "Materialet për larjen e duarve mund të rigjenerohen." },
     { title: "Ndjekja e progresit është aktive", detail: "Janë gati tri vëzhgime shembull." }
   ];
   state.chatMessages = [
@@ -125,9 +185,9 @@ async function loadSampleStudent() {
 
 function seedProgress() {
   state.progressEntries = [
-    createProgressEntry({ date: "2026-07-08", goal: "Përdor orarin vizual", activity: "Mbërritja në mëngjes", success: 64, behavior: 72, attention: 68, communication: 58, independence: 52, mood: "Kurioz/e", notes: "Kishte nevojë për një kujtesë për të kontrolluar orarin." }),
-    createProgressEntry({ date: "2026-07-09", goal: "Kërkon pushim", activity: "Blloku i shkrimit", success: 72, behavior: 78, attention: 70, communication: 66, independence: 60, mood: "I/e qetë", notes: "Përdori kartën e pushimit para se frustrimi të rritej." }),
-    createProgressEntry({ date: "2026-07-10", goal: "Sekuenca e larjes së duarve", activity: "Rutina e drekës", success: 82, behavior: 84, attention: 76, communication: 70, independence: 68, mood: "Krenar/e", notes: "Përfundoi hapat e sapunit dhe shpëlarjes pa ndihmë." })
+    createProgressEntry({ date: "2026-07-08", goal: "Përdor orarin vizual", result: "Kontrolloi orarin pas një kujtese të shkurtër." }),
+    createProgressEntry({ date: "2026-07-09", goal: "Kërkon pushim", result: "Përdori kartën e pushimit në mënyrë të pavarur." }),
+    createProgressEntry({ date: "2026-07-10", goal: "Sekuenca e larjes së duarve", result: "Përfundoi hapat e sapunit dhe shpëlarjes pa ndihmë." })
   ];
 }
 
@@ -147,7 +207,15 @@ function bindGlobalEvents() {
   document.addEventListener("submit", handleSubmit);
   document.addEventListener("input", handleInput);
   document.addEventListener("change", handleChange);
+  document.addEventListener("dragstart", handleScheduleDragStart);
+  document.addEventListener("dragover", handleScheduleDragOver);
+  document.addEventListener("dragleave", handleScheduleDragLeave);
+  document.addEventListener("drop", handleScheduleDrop);
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && event.target.matches("[data-dashboard-goal]")) {
+      event.preventDefault();
+      event.target.blur();
+    }
     if (event.key === "Escape") closeModal();
   });
   searchInput.addEventListener("input", handleSearch);
@@ -162,11 +230,22 @@ function handleClick(event) {
 
   const actionButton = event.target.closest("[data-action]");
   if (!actionButton) return;
-  const { action, toolId } = actionButton.dataset;
+  const { action, toolId, goalIndex, studentId, dayIndex, slotId } = actionButton.dataset;
 
   const actions = {
     "toggle-sidebar": () => sidebar.classList.toggle("open"),
     "toggle-theme": toggleTheme,
+    "toggle-dashboard-goal": () => toggleDashboardGoal(Number(goalIndex)),
+    "open-student-profile": () => showStudentProfile(studentId),
+    "back-student-list": showStudentList,
+    "open-add-student": openAddStudentModal,
+    "open-report-preview": () => openReportPreview(studentId),
+    "back-report-list": showReportList,
+    "schedule-day": () => selectScheduleDay(Number(dayIndex)),
+    "schedule-student": () => selectScheduleStudent(studentId),
+    "schedule-next-week": nextScheduleWeek,
+    "toggle-slot-complete": () => toggleScheduleSlot(slotId),
+    "edit-schedule-slot": () => openScheduleSlotEditor(slotId),
     "close-modal": closeModal,
     "parse-plan": parsePlanFromInputs,
     "tool-details": () => showToolDetails(toolId),
@@ -178,6 +257,7 @@ function handleClick(event) {
     "generate-aac": generateAACFromInput,
     "copy-material": copyMaterial,
     "print-view": () => window.print(),
+    "download-report-pdf": printReportAsPdf,
     "download-placeholder": () => toast("Eksporti PDF është gati si funksion provë për integrim të ardhshëm."),
     "edit-material": enableMaterialEditing,
     "regenerate-material": generateAACFromInput,
@@ -192,8 +272,77 @@ function handleClick(event) {
   actions[action]?.();
 }
 
+function toggleDashboardGoal(index) {
+  if (state.completedGoals.has(index)) {
+    state.completedGoals.delete(index);
+  } else {
+    state.completedGoals.add(index);
+  }
+  navigate("dashboard");
+}
+
+function showStudentProfile(studentId) {
+  const student = state.students.find((item) => item.id === studentId);
+  if (!student) return;
+  activateStudent(student);
+  state.studentProfileOpen = true;
+  refreshDerivedState();
+  navigate("students", { keepStudentProfile: true });
+}
+
+function getStudentProgress(studentId) {
+  if (!state.progressByStudent[studentId]) state.progressByStudent[studentId] = [];
+  return state.progressByStudent[studentId];
+}
+
+function activateStudent(student) {
+  state.currentStudent = student;
+  state.progressEntries = getStudentProgress(student.id);
+  refreshDerivedState();
+}
+
+function openReportPreview(studentId) {
+  const student = state.students.find((item) => item.id === studentId);
+  if (!student) return;
+  activateStudent(student);
+  state.reportPreviewOpen = true;
+  navigate("reports", { keepReportPreview: true });
+}
+
+function showReportList() {
+  state.reportPreviewOpen = false;
+  navigate("reports");
+}
+
+function printReportAsPdf() {
+  toast("Zgjidhni 'Ruaj si PDF' në dritaren e printimit.");
+  window.print();
+}
+
+function showStudentList() {
+  state.studentProfileOpen = false;
+  navigate("students");
+}
+
+function createPrivacySafeStudents(sample) {
+  const shared = { ...sample, diagnosis: "Profil mësimor", studentName: undefined };
+
+  return [
+    new Student({ ...shared, nickname: "Ylli i Vogël", initials: "M.J.", age: 8, birthday: "14 mars", animal: "bear", learningStyle: "Përfiton nga mbështetja vizuale, frazat e shkurtra dhe rutinat e qarta." }),
+    new Student({ ...shared, nickname: "Luani Kureshtar", initials: "A.K.", age: 9, birthday: "2 korrik", animal: "lion", learningStyle: "Mëson mirë përmes shembujve praktikë, zgjedhjeve dhe lëvizjes së shkurtër.", immediateObjectives: ["Të ndjekë një udhëzim me dy hapa", "Të kërkojë ndihmë me një frazë të shkurtër"] }),
+    new Student({ ...shared, nickname: "Lepurushja e Qetë", initials: "E.R.", age: 7, birthday: "21 shtator", animal: "rabbit", learningStyle: "Përfiton nga ritmi i qetë, koha për përgjigje dhe materialet me figura.", immediateObjectives: ["Të zgjedhë mes dy aktiviteteve", "Të përfundojë rutinën e mëngjesit", "Të përdorë kartën e pushimit"] }),
+    new Student({ ...shared, nickname: "Dhelpra Krijuese", initials: "L.B.", age: 10, birthday: "8 dhjetor", animal: "fox", learningStyle: "Angazhohet më shumë me tregime, vizatim dhe detyra të ndara në hapa të vegjël.", immediateObjectives: ["Të organizojë materialet para aktivitetit", "Të përdorë orarin vizual pa kujtesë"] })
+  ];
+}
+
 function handleSubmit(event) {
   event.preventDefault();
+  if (event.target.id === "scheduleSlotForm") {
+    saveScheduleSlot(new FormData(event.target));
+  }
+  if (event.target.id === "addStudentForm") {
+    addStudentProfile(new FormData(event.target));
+  }
   if (event.target.id === "chatForm") {
     sendCoachMessage(document.getElementById("chatInput").value);
   }
@@ -203,6 +352,12 @@ function handleSubmit(event) {
 }
 
 function handleInput(event) {
+  if (event.target.matches("[data-dashboard-goal]")) {
+    const index = Number(event.target.dataset.dashboardGoal);
+    state.currentStudent.immediateObjectives[index] = event.target.textContent.trim();
+    return;
+  }
+
   if (event.target.matches("input[type='range']")) {
     event.target.nextElementSibling.textContent = `${event.target.value}%`;
   }
@@ -215,7 +370,9 @@ function handleChange(event) {
   }
 }
 
-function navigate(route) {
+function navigate(route, options = {}) {
+  if (route === "students" && !options.keepStudentProfile) state.studentProfileOpen = false;
+  if (route === "reports" && !options.keepReportPreview) state.reportPreviewOpen = false;
   state.route = route;
   sidebar.classList.remove("open");
   renderNavigation();
@@ -234,11 +391,8 @@ function renderRoute(route) {
     dashboard: () => renderDashboard(state),
     students: renderStudents,
     upload: renderUpload,
-    aac: renderAAC,
     tools: () => renderTools("Paketa e mësimdhënies", educationalTools),
-    assistive: () => renderTools("Teknologji ndihmëse", educationalTools.filter((tool) => tool.techLevel !== "No tech")),
-    sensory: () => renderTools("Mbështetje shqisore", educationalTools.filter((tool) => tool.goal.toLowerCase().includes("sensory") || tool.category.includes("headphones"))),
-    schedules: () => renderTools("Oraret vizuale", educationalTools.filter((tool) => tool.category.includes("Visual") || tool.category.includes("Timers"))),
+    schedules: renderSchedule,
     boards: renderCommunicationBoards,
     progress: renderProgress,
     reports: renderReports,
@@ -277,18 +431,21 @@ async function attachCommunicationModuleApi() {
 }
 
 function renderStudents() {
+  if (!state.studentProfileOpen) return renderStudentList();
+
   const student = state.currentStudent;
   return `
-    <section class="glass-card profile-top">
-      <div class="avatar" style="background:${student.photoColor}" aria-hidden="true">${initials(student.name)}</div>
-      <div>
-        <p class="eyebrow">Profili i nxënësit</p>
-        <h2>${student.name}</h2>
-        <p>${student.age} years old. ${student.diagnosis}. ${student.communication}</p>
+    <button class="student-back-button" type="button" data-action="back-student-list">← Kthehu te lista</button>
+    <section class="glass-card profile-top private-profile-header">
+      <div class="animal-avatar animal-avatar-large" aria-hidden="true">${animalIcon(student.animal)}</div>
+      <div class="private-profile-copy">
+        <p class="eyebrow">Profil privat i nxënësit</p>
+        <h2>${student.nickname} <span>${student.initials}</span></h2>
+        <p>${student.learningStyle}</p>
         <div class="badge-row">
-          <span class="badge">Komunikimi: multimodal</span>
-          <span class="badge">Progresi: ${state.progressSummary.trend}</span>
-          <span class="badge">Objektiva aktuale: ${student.immediateObjectives.length + student.longTermObjectives.length}</span>
+          <span class="badge">Mosha: ${student.age} vjeç</span>
+          <span class="badge">Ditëlindja: ${student.birthday}</span>
+          <span class="badge">Objektiva aktuale: ${student.immediateObjectives.length}</span>
         </div>
       </div>
     </section>
@@ -296,8 +453,7 @@ function renderStudents() {
       ${profileCard("Pikat e forta", student.strengths)}
       ${profileCard("Sfidat", student.challenges)}
       ${profileCard("Përforcuesit e preferuar", student.reinforcers)}
-      ${profileCard("Shkaktarë të sjelljes", student.behaviorTriggers)}
-      ${profileCard("Profili shqisor", student.sensoryNeeds)}
+      ${profileCard("Alergjitë", student.allergies)}
       ${profileCard("Profili i komunikimit", [student.communication, ...student.speechGoals])}
     </section>
     <section class="glass-card">
@@ -325,6 +481,140 @@ function renderStudents() {
   `;
 }
 
+function renderStudentList() {
+  return `
+    <section class="student-list-heading">
+      <div>
+        <p class="eyebrow">Pamje private</p>
+        <h2>Profilet e nxënësve</h2>
+        <p>Zgjidhni një pseudonim për të hapur profilin e plotë.</p>
+      </div>
+      <div class="student-list-actions">
+        <span class="privacy-badge">Vetëm pseudonime</span>
+        <button class="student-add-button" type="button" data-action="open-add-student">+ Shto profil</button>
+      </div>
+    </section>
+    <section class="student-preview-grid" aria-label="Lista e profileve të nxënësve">
+      ${state.students.map((student) => `
+        <button
+          class="student-preview-card"
+          type="button"
+          data-action="open-student-profile"
+          data-student-id="${student.id}"
+          aria-label="Hap profilin e ${student.nickname}, ${student.initials}"
+        >
+          <span class="animal-avatar" aria-hidden="true">${animalIcon(student.animal)}</span>
+          <span class="student-preview-name">${student.nickname}</span>
+          <span class="student-preview-initials">${student.initials}</span>
+          <span class="student-preview-facts">
+            <span><strong>Mosha</strong>${student.age} vjeç</span>
+            <span><strong>Ditëlindja</strong>${student.birthday}</span>
+            <span><strong>Objektiva</strong>${student.immediateObjectives.length}</span>
+          </span>
+        </button>
+      `).join("")}
+    </section>
+  `;
+}
+
+function openAddStudentModal() {
+  const animals = [
+    ["bear", "Ariu"],
+    ["lion", "Luani"],
+    ["rabbit", "Lepuri"],
+    ["fox", "Dhelpra"],
+    ["cat", "Macja"],
+    ["owl", "Bufi"],
+    ["panda", "Panda"],
+    ["turtle", "Breshka"]
+  ];
+
+  openModal("Profil i ri", "Shto profil nxënësi", `
+    <form id="addStudentForm" class="student-add-form">
+      <div class="student-add-fields">
+        ${field("Pseudonimi", `<input name="nickname" placeholder="P.sh. Ylli i Artë" maxlength="40" required />`)}
+        ${field("Inicialet", `<input name="initials" placeholder="P.sh. A.K." maxlength="8" required />`)}
+        ${field("Mosha", `<input name="age" type="number" min="3" max="18" required />`)}
+        ${field("Ditëlindja", `<input name="birthday" type="date" required />`)}
+      </div>
+      <fieldset class="animal-picker">
+        <legend>Zgjidh ikonën e kafshës</legend>
+        <div class="animal-choice-grid">
+          ${animals.map(([value, label], index) => `
+            <label class="animal-choice">
+              <input type="radio" name="animal" value="${value}" ${index === 0 ? "checked" : ""} />
+              <span class="animal-avatar" aria-hidden="true">${animalIcon(value)}</span>
+              <span>${label}</span>
+            </label>
+          `).join("")}
+        </div>
+      </fieldset>
+      ${field("Objektivat aktuale", `<textarea name="objectives" rows="5" placeholder="Shkruani një objektiv për çdo rresht" required></textarea>`)}
+      ${field("Alergjitë", `<textarea name="allergies" rows="3" placeholder="Shkruani një alergji për çdo rresht; lëreni bosh nëse nuk ka"></textarea>`)}
+      <p class="student-add-note">Përdorni vetëm pseudonim dhe iniciale. Mos vendosni emër real ose diagnozë.</p>
+      <button class="primary-button" type="submit">Ruaj profilin</button>
+    </form>
+  `);
+}
+
+function addStudentProfile(formData) {
+  const objectives = String(formData.get("objectives") || "")
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const allergies = String(formData.get("allergies") || "")
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const student = new Student({
+    nickname: String(formData.get("nickname") || "").trim(),
+    initials: String(formData.get("initials") || "").trim().toUpperCase(),
+    age: Number(formData.get("age")),
+    birthday: formatBirthday(String(formData.get("birthday") || "")),
+    animal: String(formData.get("animal") || "bear"),
+    learningStyle: "Profili mësimor mund të plotësohet me mbështetje praktike dhe rutina të qarta.",
+    diagnosis: "Profil mësimor",
+    communicationAbilities: "Përfiton nga udhëzimet e qarta dhe mbështetja vizuale.",
+    immediateObjectives: objectives,
+    allergies: allergies.length ? allergies : ["Nuk janë shënuar alergji"],
+    longTermObjectives: [],
+    strengths: ["Pikat e forta do të plotësohen nga mësuesja"],
+    challenges: ["Nevojat praktike do të plotësohen nga mësuesja"],
+    preferredReinforcers: ["Përforcuesit do të plotësohen nga mësuesja"],
+    behaviorTriggers: ["Shkaktarët do të plotësohen nga mësuesja"]
+  });
+
+  state.students.push(student);
+  state.scheduleByStudent[student.id] = createInitialSchedule();
+  state.progressByStudent[student.id] = [];
+  activateStudent(student);
+  state.studentProfileOpen = false;
+  state.activity.unshift({ title: "U shtua profil i ri", detail: `Profili ${student.nickname} u krijua me pseudonim.` });
+  closeModal();
+  navigate("students");
+  toast("Profili i ri u shtua.");
+}
+
+function formatBirthday(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value || "Nuk është shënuar";
+  return new Date(`${value}T12:00:00`).toLocaleDateString("sq-AL", { day: "numeric", month: "long" });
+}
+
+function animalIcon(type) {
+  const icons = {
+    bear: `<svg viewBox="0 0 64 64"><circle class="animal-ear" cx="17" cy="17" r="10"/><circle class="animal-ear" cx="47" cy="17" r="10"/><circle class="animal-face" cx="32" cy="34" r="24"/><circle class="animal-eye" cx="24" cy="31" r="2.5"/><circle class="animal-eye" cx="40" cy="31" r="2.5"/><ellipse class="animal-muzzle" cx="32" cy="42" rx="10" ry="8"/><path class="animal-nose" d="M28 39h8l-4 4Z"/><path class="animal-smile" d="M32 43v3m0 0c-3 0-5 1-6 3m6-3c3 0 5 1 6 3"/></svg>`,
+    lion: `<svg viewBox="0 0 64 64"><circle class="lion-mane" cx="32" cy="32" r="29"/><circle class="animal-ear" cx="17" cy="19" r="8"/><circle class="animal-ear" cx="47" cy="19" r="8"/><circle class="animal-face" cx="32" cy="33" r="21"/><circle class="animal-eye" cx="24" cy="31" r="2.5"/><circle class="animal-eye" cx="40" cy="31" r="2.5"/><ellipse class="animal-muzzle" cx="32" cy="41" rx="9" ry="7"/><path class="animal-nose" d="M28 38h8l-4 5Z"/></svg>`,
+    rabbit: `<svg viewBox="0 0 64 64"><ellipse class="rabbit-ear" cx="22" cy="15" rx="8" ry="17" transform="rotate(-10 22 15)"/><ellipse class="rabbit-ear" cx="42" cy="15" rx="8" ry="17" transform="rotate(10 42 15)"/><circle class="animal-face" cx="32" cy="38" r="22"/><circle class="animal-eye" cx="24" cy="36" r="2.5"/><circle class="animal-eye" cx="40" cy="36" r="2.5"/><path class="rabbit-nose" d="M29 42h6l-3 4Z"/><path class="animal-smile" d="M32 46v3m0 0-5 3m5-3 5 3"/></svg>`,
+    fox: `<svg viewBox="0 0 64 64"><path class="fox-head" d="M7 12 22 20c6-4 14-4 20 0l15-8-5 25c-2 14-10 22-20 22S14 51 12 37Z"/><path class="fox-cheek" d="M13 34c8 2 14 8 19 20 5-12 11-18 19-20-2 15-9 23-19 23S15 49 13 34Z"/><circle class="animal-eye" cx="24" cy="34" r="2.5"/><circle class="animal-eye" cx="40" cy="34" r="2.5"/><path class="animal-nose" d="M28 45h8l-4 5Z"/></svg>`,
+    cat: `<svg viewBox="0 0 64 64"><path class="cat-head" d="m10 15 14 7c5-3 11-3 16 0l14-7-3 25c-2 12-9 19-19 19S15 52 13 40Z"/><circle class="animal-eye" cx="24" cy="35" r="2.5"/><circle class="animal-eye" cx="40" cy="35" r="2.5"/><path class="rabbit-nose" d="M29 43h6l-3 4Z"/><path class="animal-smile" d="M32 47v3m-4-6-10-2m10 5-10 2m18-5 10-2m-10 5 10 2"/></svg>`,
+    owl: `<svg viewBox="0 0 64 64"><path class="owl-body" d="M12 27C12 13 20 6 32 6s20 7 20 21v25l-8-5-12 10-12-10-8 5Z"/><circle class="owl-eye-bg" cx="23" cy="28" r="10"/><circle class="owl-eye-bg" cx="41" cy="28" r="10"/><circle class="animal-eye" cx="23" cy="28" r="3"/><circle class="animal-eye" cx="41" cy="28" r="3"/><path class="owl-beak" d="m28 37 4 6 4-6Z"/></svg>`,
+    panda: `<svg viewBox="0 0 64 64"><circle class="panda-ear" cx="17" cy="17" r="10"/><circle class="panda-ear" cx="47" cy="17" r="10"/><circle class="panda-face" cx="32" cy="34" r="24"/><ellipse class="panda-patch" cx="23" cy="31" rx="7" ry="9" transform="rotate(25 23 31)"/><ellipse class="panda-patch" cx="41" cy="31" rx="7" ry="9" transform="rotate(-25 41 31)"/><circle class="panda-eye" cx="24" cy="31" r="2"/><circle class="panda-eye" cx="40" cy="31" r="2"/><path class="animal-nose" d="M28 42h8l-4 5Z"/></svg>`,
+    turtle: `<svg viewBox="0 0 64 64"><ellipse class="turtle-shell" cx="31" cy="35" rx="22" ry="17"/><circle class="turtle-head" cx="53" cy="34" r="9"/><circle class="animal-eye" cx="56" cy="32" r="1.8"/><circle class="turtle-leg" cx="18" cy="51" r="5"/><circle class="turtle-leg" cx="42" cy="51" r="5"/><path class="turtle-pattern" d="m20 25 11-6 11 6v13l-11 7-11-7Zm0 0-9 7m31-7 10 7M20 38l-8 5m30-5 8 5"/></svg>`
+  };
+  return icons[type] || icons.bear;
+}
+
 function profileCard(title, items) {
   return `
     <article class="profile-card">
@@ -339,24 +629,21 @@ function renderUpload() {
     <section class="glass-card">
       <p class="eyebrow">Lexuesi i PIA / IEP</p>
       <h2>Ngarko ose ngjit planin e nxënësit</h2>
-      <p>Mbështet PDF, DOCX, TXT, shënime të kopjuara dhe tërheqje-lëshim. Ky prototip përdor analizim provë dhe mban të dhënat vetëm në memorie.</p>
+      <p>Mbështet PDF, DOCX, TXT dhe tekst të kopjuar. Emrat, inicialet dhe termat mjekësorë filtrohen para analizimit.</p>
       <div class="upload-zone" id="uploadZone">
         <div>
           <strong>Lësho këtu një skedar PDF, DOCX ose TXT</strong>
-          <p>Nxjerrja e tekstit simulohet për PDF dhe DOCX derisa të lidhet një shërbim AI/analizues.</p>
+          <p>Emri i skedarit nuk përdoret kurrë si emër nxënësi.</p>
           <input id="fileUpload" type="file" accept=".pdf,.docx,.txt" aria-label="Ngarko planin e nxënësit" />
         </div>
       </div>
       <label class="field">
         <span>Kopjo dhe ngjit tekstin e planit</span>
-        <textarea id="planText">Emri i nxënësit: Leo Martin
+        <textarea id="planText">Pseudonimi: Nxënësi A
 Mosha: 7
-Diagnoza: ADHD me nevoja për rregullim shqisor.
 Komunikimi: Përdor fraza verbale dhe përfiton nga zgjedhjet vizuale.
 Objektivi i menjëhershëm: Të kërkojë ndihmë gjatë shkrimit me një kujtesë.
 Objektivi afatgjatë: Të përfundojë rutinat e klasës me më shumë pavarësi.
-Nevojë shqisore: Pushim me lëvizje pas detyrave të gjata ulur.
-Shkaktar: Kalim i papritur.
 Përforcues: Zgjedhja e rolit ndihmës në klasë.</textarea>
       </label>
       <div class="toolbar">
@@ -377,18 +664,10 @@ function renderTools(title, tools) {
     <section class="glass-card">
       <p class="eyebrow">Përputhësi i mjeteve me AI</p>
       <h2>${title}</h2>
+      <p class="tool-access-note">Të gjitha paketat janë të hapura për çdo mësuese.</p>
       <div class="filter-grid">
-        ${field("Kërko", `<input id="toolQuery" placeholder="AAC, shqisore, kalime..." />`)}
         ${field("Kategoria", select("toolCategory", categories))}
         ${field("Mosha", `<input id="toolAge" type="number" min="3" max="18" value="${state.currentStudent.age}" />`)}
-        ${field("Çmimi", select("toolPrice", [{ value: "All", label: "Të gjitha" }, { value: "Free", label: "Falas" }, "$", "$$"]))}
-        ${field("Diagnoza", select("toolDiagnosis", [
-          { value: "All", label: "Të gjitha" },
-          { value: "Autism", label: "Autizëm" },
-          "ADHD",
-          { value: "Developmental delay", label: "Vonesë zhvillimore" },
-          { value: "Sensory processing", label: "Përpunim shqisor" }
-        ]))}
         ${field("Objektivi", `<input id="toolGoal" placeholder="Komunikim, motorikë fine..." />`)}
         ${field("Teknologjia", select("toolTech", [
           { value: "All", label: "Të gjitha" },
@@ -409,7 +688,7 @@ function toolCards(tools) {
     <article class="tool-card slide-up" data-tool-card="${tool.id}">
       <div class="row" style="justify-content:space-between; gap:1rem;">
         <div class="tool-image" aria-hidden="true">${tool.image}</div>
-        <span class="badge">${translateToolLabel(tool.cost)}</span>
+        <span class="badge">E hapur</span>
       </div>
       <div>
         <p class="eyebrow">${translateToolLabel(tool.category)}</p>
@@ -498,75 +777,260 @@ function renderCommunicationBoards() {
   `;
 }
 
-function renderProgress() {
-  const summary = state.progressSummary;
+function renderSchedule() {
+  const entries = getStudentSchedule(state.currentStudent.id)[state.scheduleDay];
+  const goals = state.currentStudent.immediateObjectives.length
+    ? state.currentStudent.immediateObjectives
+    : ["Të ndjekë rutinën e ditës", "Të kërkojë ndihmë"];
   return `
-    <section class="progress-layout">
-      <form class="glass-card" id="progressForm">
-        <p class="eyebrow">Vëzhgim ditor</p>
+    <section class="cute-schedule-shell">
+      <svg class="schedule-decoration flower-one" viewBox="0 0 80 80" aria-hidden="true"><path d="M39 42C18 45 11 27 25 22c-1-17 23-19 27-4 16-5 24 17 9 25 8 15-14 25-22 10-10 12-28-3-17-15 4-4 10-3 17 4Z"/><circle cx="40" cy="38" r="9"/></svg>
+      <svg class="schedule-decoration leaf-sprig" viewBox="0 0 90 90" aria-hidden="true"><path d="M15 76C32 58 48 40 70 17"/><ellipse cx="30" cy="59" rx="13" ry="7" transform="rotate(38 30 59)"/><ellipse cx="47" cy="43" rx="13" ry="7" transform="rotate(-32 47 43)"/><ellipse cx="62" cy="28" rx="12" ry="7" transform="rotate(35 62 28)"/></svg>
+      <div class="schedule-heading">
+        <div>
+          <p class="eyebrow">PlanifikoMeAtlas</p>
+          <h2>Orari i javës</h2>
+          <p>Organizoni aktivitetet dhe lidhni objektivat me çdo orë.</p>
+        </div>
+        <div class="schedule-week-control">
+          <span>Java ${state.scheduleWeekOffset + 1}</span>
+          <button type="button" data-action="schedule-next-week">Java tjetër →</button>
+        </div>
+      </div>
+
+      <nav class="schedule-days" aria-label="Ditët e javës">
+        ${scheduleDays.map((day, index) => `<button type="button" data-action="schedule-day" data-day-index="${index}" aria-current="${index === state.scheduleDay ? "date" : "false"}">${day}</button>`).join("")}
+      </nav>
+
+      <section class="schedule-student-picker" aria-label="Zgjidh nxënësin për orarin">
+        <div>
+          <h3>Orari i nxënësit</h3>
+          <p>Çdo profil ka orarin e vet.</p>
+        </div>
+        <div class="schedule-student-options">
+          ${state.students.map((student) => `
+            <button
+              type="button"
+              data-action="schedule-student"
+              data-student-id="${student.id}"
+              aria-pressed="${student.id === state.currentStudent.id}"
+            >
+              <span class="schedule-student-animal" aria-hidden="true">${animalIcon(student.animal)}</span>
+              <span><strong>${escapeHtml(student.nickname)}</strong><small>${escapeHtml(student.initials)}</small></span>
+            </button>
+          `).join("")}
+        </div>
+      </section>
+
+      <section class="schedule-goal-bank">
+        <div>
+          <h3>Objektivat për t'u lidhur</h3>
+          <p>Zvarriteni një objektiv te ora e dëshiruar.</p>
+        </div>
+        <div class="schedule-goal-chips">
+          ${goals.map((goal, index) => `<button class="schedule-goal-chip" type="button" draggable="true" data-schedule-goal="${escapeHtml(goal)}"><span aria-hidden="true">★</span>${escapeHtml(goal)}</button>`).join("")}
+        </div>
+      </section>
+
+      <section class="schedule-day-panel">
+        <div class="schedule-day-title">
+          <span class="schedule-animal" aria-hidden="true">${animalIcon(state.currentStudent.animal)}</span>
+          <div><p>Plani ditor</p><h3>${scheduleDays[state.scheduleDay]}</h3></div>
+        </div>
+        <div class="schedule-slots">
+          ${entries.map((slot, index) => `
+            <article class="schedule-slot schedule-pastel-${(index % 3) + 1}" data-schedule-slot="${slot.id}">
+              <button class="schedule-complete" type="button" data-action="toggle-slot-complete" data-slot-id="${slot.id}" aria-pressed="${slot.completed}" aria-label="${slot.completed ? "Shëno si të papërfunduar" : "Shëno si të përfunduar"}: ${escapeHtml(slot.activity)}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg>
+              </button>
+              <button class="schedule-slot-main" type="button" data-action="edit-schedule-slot" data-slot-id="${slot.id}">
+                <span class="schedule-time">${slot.start} – ${slot.end}</span>
+                <strong>${escapeHtml(slot.activity)}</strong>
+                <span class="schedule-linked-goal ${slot.goal ? "has-goal" : ""}">${slot.goal ? `Objektivi: ${escapeHtml(slot.goal)}` : "Shtoni ose zvarritni një objektiv"}</span>
+              </button>
+              <span class="schedule-edit-hint">Klikoni për ta ndryshuar</span>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    </section>
+  `;
+}
+
+function selectScheduleDay(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= scheduleDays.length) return;
+  state.scheduleDay = index;
+  navigate("schedules");
+}
+
+function getStudentSchedule(studentId) {
+  if (!state.scheduleByStudent[studentId]) state.scheduleByStudent[studentId] = createInitialSchedule();
+  return state.scheduleByStudent[studentId];
+}
+
+function selectScheduleStudent(studentId) {
+  const student = state.students.find((item) => item.id === studentId);
+  if (!student) return;
+  activateStudent(student);
+  getStudentSchedule(student.id);
+  navigate("schedules");
+  toast(`U hap orari i ${student.nickname}.`);
+}
+
+function nextScheduleWeek() {
+  state.scheduleWeekOffset = (state.scheduleWeekOffset + 1) % 4;
+  navigate("schedules");
+  toast(`U hap Java ${state.scheduleWeekOffset + 1}.`);
+}
+
+function findScheduleSlot(slotId) {
+  return getStudentSchedule(state.currentStudent.id).flat().find((slot) => slot.id === slotId);
+}
+
+function toggleScheduleSlot(slotId) {
+  const slot = findScheduleSlot(slotId);
+  if (!slot) return;
+  slot.completed = !slot.completed;
+  navigate("schedules");
+  toast(slot.completed ? "Objektivi i orës u përfundua!" : "Objektivi u rihap.");
+}
+
+function openScheduleSlotEditor(slotId) {
+  const slot = findScheduleSlot(slotId);
+  if (!slot) return;
+  const goals = state.currentStudent.immediateObjectives;
+  openModal("Ndryshim i shpejtë", "Ndrysho orën", `
+    <form id="scheduleSlotForm" class="schedule-slot-form">
+      <input type="hidden" name="slotId" value="${slot.id}" />
+      <div class="schedule-time-fields">
+        ${field("Fillimi", `<input type="time" name="start" value="${slot.start}" required />`)}
+        ${field("Përfundimi", `<input type="time" name="end" value="${slot.end}" required />`)}
+      </div>
+      ${field("Lënda ose aktiviteti", `<input name="activity" value="${escapeHtml(slot.activity)}" required />`)}
+      ${field("Objektivi", `<select name="goal"><option value="">Pa objektiv të lidhur</option>${goals.map((goal) => `<option value="${escapeHtml(goal)}" ${goal === slot.goal ? "selected" : ""}>${escapeHtml(goal)}</option>`).join("")}</select>`)}
+      <button class="primary-button" type="submit">Ruaj ndryshimet</button>
+    </form>
+  `);
+}
+
+function saveScheduleSlot(formData) {
+  const slot = findScheduleSlot(String(formData.get("slotId")));
+  if (!slot) return;
+  slot.start = String(formData.get("start"));
+  slot.end = String(formData.get("end"));
+  slot.activity = String(formData.get("activity")).trim();
+  slot.goal = String(formData.get("goal") || "");
+  closeModal();
+  navigate("schedules");
+  toast("Ora u përditësua.");
+}
+
+function handleScheduleDragStart(event) {
+  const chip = event.target.closest("[data-schedule-goal]");
+  if (!chip || !event.dataTransfer) return;
+  event.dataTransfer.setData("text/plain", chip.dataset.scheduleGoal);
+  event.dataTransfer.effectAllowed = "copy";
+}
+
+function handleScheduleDragOver(event) {
+  const slot = event.target.closest("[data-schedule-slot]");
+  if (!slot) return;
+  event.preventDefault();
+  slot.classList.add("drag-over");
+}
+
+function handleScheduleDragLeave(event) {
+  const slot = event.target.closest("[data-schedule-slot]");
+  if (slot && !slot.contains(event.relatedTarget)) slot.classList.remove("drag-over");
+}
+
+function handleScheduleDrop(event) {
+  const slotNode = event.target.closest("[data-schedule-slot]");
+  if (!slotNode || !event.dataTransfer) return;
+  event.preventDefault();
+  const slot = findScheduleSlot(slotNode.dataset.scheduleSlot);
+  const goal = event.dataTransfer.getData("text/plain");
+  if (!slot || !goal) return;
+  slot.goal = goal;
+  navigate("schedules");
+  toast("Objektivi u lidh me orën.");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function renderProgress() {
+  return `
+    <section class="progress-results-layout">
+      <form class="glass-card progress-result-form" id="progressForm">
+        <p class="eyebrow">Rezultat i ri</p>
         <h2>Ndiq progresin</h2>
+        <p>Shënoni me fjalë të qarta çfarë arriti fëmija.</p>
         ${field("Data", `<input name="date" type="date" value="${new Date().toISOString().slice(0, 10)}" />`)}
         ${field("Objektivi", `<input name="goal" value="${state.currentStudent.immediateObjectives[0]}" />`)}
-        ${field("Aktiviteti", `<input name="activity" placeholder="Grupi i leximit, rutina e drekës..." required />`)}
-        ${slider("success", "Niveli i suksesit", 75)}
-        ${slider("behavior", "Sjellja", 78)}
-        ${slider("attention", "Vëmendja", 70)}
-        ${slider("communication", "Komunikimi", 68)}
-        ${slider("independence", "Pavarësia", 62)}
-        <div class="field">
-          <span>Gjendja</span>
-          <div class="mood-picker">
-            ${["I/e qetë", "Kurioz/e", "Krenar/e", "I/e lodhur", "I/e frustruar"].map((mood) => `<button type="button" class="mood-button ${state.selectedMood === mood ? "active" : ""}" data-action="mood">${mood}</button>`).join("")}
-          </div>
-        </div>
-        ${field("Shënime të mësuesit", `<textarea name="notes" placeholder="Çfarë funksionoi? Çfarë duhet të ndryshojë nesër?"></textarea>`)}
-        <button class="primary-button" type="submit">Ruaj vëzhgimin</button>
+        ${field("Rezultati i arritur", `<textarea name="result" placeholder="P.sh. Kërkoi ndihmë pa kujtesë dhe përfundoi detyrën." required></textarea>`)}
+        <button class="primary-button" type="submit">Ruaj rezultatin</button>
       </form>
-      <section class="glass-card">
-        <p class="eyebrow">Përmbledhje e progresit</p>
-        <h2>${summary.trend}</h2>
-        ${progressMetric("Përmbushja e objektivit", summary.successAverage)}
-        ${progressMetric("Komunikimi", summary.communicationAverage)}
-        ${progressMetric("Pavarësia", summary.independenceAverage)}
-        ${progressMetric("Vëmendja", summary.attentionAverage || 0)}
-        <h3>Arritje</h3>
-        <div class="badge-row">${summary.badges.map((badge) => `<span class="badge">${badge}</span>`).join("")}</div>
-        <h3>Grafikë javorë dhe mujorë</h3>
-        <div class="weekly-chart" style="min-height:10rem;">${state.progressEntries.map((entry) => `<span style="height:${entry.success}%" title="${entry.date}: ${entry.success}%"></span>`).join("")}</div>
-        <ul class="activity-list">${state.progressEntries.slice().reverse().map((entry) => `<li><strong>${entry.date}: ${entry.goal}</strong><span>${entry.activity}. ${entry.notes}</span></li>`).join("")}</ul>
+      <section class="glass-card recorded-results">
+        <div class="card-header"><div><p class="eyebrow">Historia</p><h2>Rezultatet e arritura</h2></div><span class="badge">${state.progressEntries.length} shënime</span></div>
+        <ul class="result-list">
+          ${state.progressEntries.slice().reverse().map((entry) => `<li><time>${escapeHtml(entry.date)}</time><div><strong>${escapeHtml(entry.goal)}</strong><p>${escapeHtml(entry.result)}</p></div></li>`).join("")}
+        </ul>
       </section>
     </section>
   `;
 }
 
 function renderReports() {
+  if (!state.reportPreviewOpen) return renderReportList();
+
   const report = generateParentReport(state.currentStudent, state.progressEntries);
   return `
-    <section class="glass-card" id="parentReport">
-      <p class="eyebrow">Raporte për prindër</p>
-      <h2>${report.title}</h2>
-      <p>Ky përditësim përdor gjuhë të thjeshtë për familjen dhe shmang zhargonin profesional.</p>
+    <button class="student-back-button" type="button" data-action="back-report-list">← Kthehu te raportet</button>
+    <section class="report-preview-toolbar">
+      <div><p class="eyebrow">Preview</p><h2>Raporti i ${state.currentStudent.nickname}</h2></div>
       <div class="report-actions">
-        <button class="primary-button" data-action="generate-report">Rifresko raportin</button>
-        <button class="secondary-button" data-action="download-placeholder">Shkarko PDF</button>
+        <button class="primary-button" data-action="download-report-pdf">Shkarko PDF</button>
         <button class="secondary-button" data-action="print-view">Printo</button>
-        <button class="secondary-button" data-action="copy-material">Kopjo për ndarje</button>
       </div>
     </section>
-    <section class="profile-grid">
-      ${profileCard("Pikat e forta", report.strengths)}
-      ${profileCard("Fusha në përmirësim", report.improving)}
-      ${profileCard("Fusha që duan mbështetje", report.support)}
-      ${profileCard("Aktivitete të sugjeruara në shtëpi", report.homeActivities)}
-      <article class="profile-card">
-        <h3>Grafikë</h3>
-        ${progressMetric("Suksesi javor", report.summary.successAverage)}
-        ${progressMetric("Komunikimi", report.summary.communicationAverage)}
-      </article>
-      <article class="profile-card">
-        <h3>Përforcim pozitiv</h3>
-        <p>Lavdërimi specifik, pushimet e shkurtra me zgjedhje, rolet ndihmëse dhe inkurajimi i qetë janë të përshtatshme tani.</p>
-      </article>
+    <article class="report-paper" id="parentReport">
+      <header class="report-paper-header">
+        <span class="animal-avatar" aria-hidden="true">${animalIcon(state.currentStudent.animal)}</span>
+        <div><p>PlanifikoMeAtlas</p><h2>${report.title}</h2><span>${state.currentStudent.initials} · ${new Date().toLocaleDateString("sq-AL")}</span></div>
+      </header>
+      <p class="report-intro">Përmbledhje e qartë e progresit, e përgatitur për familjen.</p>
+      <section class="report-paper-grid">
+        ${profileCard("Pikat e forta", report.strengths)}
+        ${profileCard("Rezultatet e arritura", report.achievements.map(escapeHtml))}
+        ${profileCard("Fusha që duan mbështetje", report.support)}
+        ${profileCard("Aktivitete të sugjeruara në shtëpi", report.homeActivities)}
+      </section>
+    </article>
+  `;
+}
+
+function renderReportList() {
+  return `
+    <section class="student-list-heading report-list-heading">
+      <div><p class="eyebrow">Raporte për prindër</p><h2>Zgjidhni nxënësin</h2><p>Çdo profil ka preview-n dhe raportin e vet.</p></div>
+      <span class="privacy-badge">Raporte private</span>
+    </section>
+    <section class="report-student-grid" aria-label="Lista e raporteve të nxënësve">
+      ${state.students.map((student) => {
+        const results = getStudentProgress(student.id);
+        return `<button class="report-student-card" type="button" data-action="open-report-preview" data-student-id="${student.id}" aria-label="Hap raportin e ${student.nickname}, ${student.initials}">
+          <span class="animal-avatar" aria-hidden="true">${animalIcon(student.animal)}</span>
+          <span><strong>${escapeHtml(student.nickname)}</strong><small>${escapeHtml(student.initials)}</small></span>
+          <span class="report-ready-badge">Raporti gati</span>
+          <span class="report-result-count">${results.length} rezultate të regjistruara</span>
+        </button>`;
+      }).join("")}
     </section>
   `;
 }
@@ -644,40 +1108,93 @@ function attachUploadZone() {
 
 async function readPlanFile(file) {
   if (file.name.endsWith(".txt")) {
-    document.getElementById("planText").value = await file.text();
+    document.getElementById("planText").value = sanitizePlanText(await file.text());
   } else {
-    document.getElementById("planText").value = `Emri i nxënësit: ${file.name.replace(/\.[^.]+$/, "")}
-Mosha: 9
-Diagnoza: Plan i ngarkuar nga ${file.name}.
-Komunikimi: Nxjerrje provë për PDF/DOCX. Më vonë mund të zëvendësohet me analizues dokumentesh ose API AI.
-Objektivi i menjëhershëm: Përdor mbështetje vizuale gjatë rutinës së klasës.
-Objektivi afatgjatë: Rrit pavarësinë gjatë ditës shkollore.`;
+    document.getElementById("planText").value = `Pseudonimi: Nxënësi A
+Komunikimi: Ngjitni tekstin e nxjerrë nga dokumenti për analizë të plotë.
+Objektivi i menjëhershëm: Përdor mbështetje vizuale gjatë rutinës së klasës.`;
   }
-  toast(`${file.name} u ngarkua në analizues.`);
+  toast("Dokumenti u ngarkua dhe u anonimizua.");
 }
 
 async function parsePlanFromInputs() {
   const output = document.getElementById("parserOutput");
-  const text = document.getElementById("planText").value;
-  const fileName = document.getElementById("fileUpload").files[0]?.name || "";
+  const textArea = document.getElementById("planText");
+  const text = sanitizePlanText(textArea.value);
+
+  if (!text) {
+    output.innerHTML = `<section class="glass-card parser-error"><h3>Teksti mungon</h3><p>Ngarkoni një dokument ose ngjitni tekstin e planit para analizimit.</p></section>`;
+    toast("Shtoni tekstin e planit para analizimit.");
+    return;
+  }
+
+  textArea.value = text;
   output.innerHTML = document.getElementById("loadingTemplate").innerHTML;
-  const parsed = await parseIEP(text, fileName);
-  const student = normalizeParsedStudent(parsed);
-  state.students.unshift(student);
-  state.currentStudent = student;
-  state.activity.unshift({ title: "Plani i nxënësit u analizua", detail: `Profili i ${student.name} u krijua.` });
-  refreshDerivedState();
-  output.innerHTML = `<section class="glass-card"><h3>Profili i ${student.name} është gati</h3><p>${student.communication}</p><button class="primary-button" data-route="students">Shiko profilin e nxënësit</button></section>`;
-  toast("Profili i nxënësit u krijua nga analizuesi provë.");
+
+  try {
+    const parsed = await parseIEP(text);
+    const student = privatizeStudent(normalizeParsedStudent(parsed));
+    const summary = buildPlanSummary(student);
+    state.students.unshift(student);
+    state.scheduleByStudent[student.id] = createInitialSchedule();
+    state.progressByStudent[student.id] = [];
+    activateStudent(student);
+    state.activity.unshift({ title: "Plani u analizua", detail: `Përmbledhja private e ${student.nickname} u krijua.` });
+    refreshDerivedState();
+    output.innerHTML = `
+      <section class="glass-card plan-summary">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Analizë e anonimizuar</p>
+            <h3>Përmbledhja e planit</h3>
+          </div>
+          <span class="privacy-badge">E anonimizuar</span>
+        </div>
+        <div class="plan-summary-grid">
+          ${summaryCard("Pikat e forta", summary.strengths)}
+          ${summaryCard("Sfidat kryesore", summary.challenges)}
+          ${summaryCard("Objektivat e sugjeruara", summary.objectives)}
+        </div>
+        <button class="primary-button" data-route="students">Shiko profilin e nxënësit</button>
+      </section>`;
+    toast("Përmbledhja private u krijua.");
+  } catch (error) {
+    console.error(error);
+    output.innerHTML = `<section class="glass-card parser-error"><h3>Analizimi dështoi</h3><p>Kontrolloni tekstin dhe provoni përsëri.</p></section>`;
+    toast("Nuk mundëm ta analizonim planin. Provoni përsëri.");
+  }
+}
+
+function buildPlanSummary(student) {
+  return {
+    strengths: student.strengths.slice(0, 3),
+    challenges: student.challenges.slice(0, 3),
+    objectives: [...student.immediateObjectives, ...student.longTermObjectives].slice(0, 4)
+  };
+}
+
+function summaryCard(title, items) {
+  const safeItems = items.length ? items : ["Për t'u plotësuar nga mësuesja"];
+  return `<article class="plan-summary-card"><h4>${title}</h4><ul>${safeItems.map((item) => `<li>${item}</li>`).join("")}</ul></article>`;
+}
+
+function privatizeStudent(student) {
+  const animals = ["bear", "lion", "rabbit", "fox"];
+  const index = state.students.length;
+  student.nickname = `Ylli i Ri ${index + 1}`;
+  student.name = student.nickname;
+  student.initials = "N.X.";
+  student.birthday = "Nuk është shënuar";
+  student.animal = animals[index % animals.length];
+  student.learningStyle = student.communication || "Përfiton nga udhëzimet e qarta dhe mbështetja vizuale.";
+  student.diagnosis = "Profil mësimor";
+  return student;
 }
 
 function filterToolsFromControls() {
   const filters = {
-    query: document.getElementById("toolQuery")?.value || "",
     category: document.getElementById("toolCategory")?.value || "All",
-    price: document.getElementById("toolPrice")?.value || "All",
     age: document.getElementById("toolAge")?.value || "",
-    diagnosis: document.getElementById("toolDiagnosis")?.value || "All",
     goal: document.getElementById("toolGoal")?.value || "",
     techLevel: document.getElementById("toolTech")?.value || "All"
   };
@@ -686,14 +1203,14 @@ function filterToolsFromControls() {
 }
 
 document.addEventListener("input", (event) => {
-  if (["toolQuery", "toolGoal", "toolAge", "fontSize"].includes(event.target.id)) {
+  if (["toolGoal", "toolAge", "fontSize"].includes(event.target.id)) {
     if (event.target.id === "fontSize") document.documentElement.style.setProperty("--font-scale", event.target.value);
     else filterToolsFromControls();
   }
 });
 
 document.addEventListener("change", (event) => {
-  if (["toolCategory", "toolPrice", "toolDiagnosis", "toolTech"].includes(event.target.id)) filterToolsFromControls();
+  if (["toolCategory", "toolTech"].includes(event.target.id)) filterToolsFromControls();
   if (event.target.id === "themeColor") document.documentElement.style.setProperty("--primary", event.target.value);
 });
 
@@ -709,7 +1226,7 @@ function showToolDetails(toolId) {
           <span class="badge">${translateToolLabel(tool.category)}</span>
           <span class="badge">${tool.ageRange}</span>
           <span class="badge">${translateToolLabel(tool.techLevel)}</span>
-          <span class="badge">${translateToolLabel(tool.cost)}</span>
+          <span class="badge">E hapur</span>
         </div>
       </div>
     </div>
@@ -795,19 +1312,12 @@ function addProgressEntry(formData) {
   const entry = createProgressEntry({
     date: formData.get("date"),
     goal: formData.get("goal"),
-    activity: formData.get("activity"),
-    success: formData.get("success"),
-    behavior: formData.get("behavior"),
-    attention: formData.get("attention"),
-    communication: formData.get("communication"),
-    independence: formData.get("independence"),
-    notes: formData.get("notes"),
-    mood: state.selectedMood
+    result: formData.get("result")
   });
   state.progressEntries.push(entry);
-  state.activity.unshift({ title: "Progresi u regjistrua", detail: `${entry.goal}: ${entry.success}% sukses.` });
+  state.activity.unshift({ title: "Rezultati u regjistrua", detail: `${entry.goal}: ${entry.result}` });
   refreshDerivedState();
-  toast("Vëzhgimi u ruajt në memorie.");
+  toast("Rezultati u ruajt dhe është gati për raportin e prindërve.");
   navigate("progress");
 }
 
@@ -866,10 +1376,9 @@ function handleSearch() {
     return;
   }
   const items = [
-    ...state.students.map((student) => ({ title: student.name, detail: student.diagnosis, route: "students" })),
+    ...state.students.map((student) => ({ title: `${student.nickname} ${student.initials}`, detail: student.learningStyle, route: "students" })),
     ...educationalTools.map((tool) => ({ title: tool.title, detail: `${tool.category}: ${tool.goal}`, route: "tools" })),
-    { title: "Raport për prindër", detail: `Përditësim i thjeshtë për familjen e ${state.currentStudent.name}`, route: "reports" },
-    { title: "Mësim AAC", detail: state.lastMaterial?.topic || "mbështetje për larjen e duarve", route: "aac" }
+    { title: "Raport për prindër", detail: `Përditësim i thjeshtë për familjen e ${state.currentStudent.name}`, route: "reports" }
   ].filter((item) => `${item.title} ${item.detail}`.toLowerCase().includes(query));
 
   searchResults.innerHTML = `<strong>${items.length} rezultat${items.length === 1 ? "" : "e"}</strong>${items.slice(0, 6).map((item) => `<button class="search-result" data-route="${item.route}"><strong>${item.title}</strong><br><span>${item.detail}</span></button>`).join("")}`;
@@ -888,6 +1397,11 @@ function clearMemory() {
   state.savedTools.clear();
   state.favoriteTools.clear();
   state.compareTools.clear();
+  state.completedGoals.clear();
+  state.scheduleByStudent = Object.fromEntries(state.students.map((student) => [student.id, createInitialSchedule()]));
+  state.progressByStudent = { [state.currentStudent.id]: [] };
+  state.progressEntries = state.progressByStudent[state.currentStudent.id];
+  refreshDerivedState();
   state.activity = [{ title: "Memoria u pastrua", detail: "Në këtë sesion mbetet vetëm nxënësi shembull." }];
   toast("Të dhënat e sesionit në memorie u pastruan.");
   navigate("dashboard");

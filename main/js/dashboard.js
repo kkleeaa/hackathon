@@ -1,72 +1,102 @@
 export function renderDashboard(state) {
   const student = state.currentStudent;
-  const progress = state.progressSummary;
   return `
-    <section class="hero-panel fade-in">
-      <div>
-        <p class="eyebrow">Qendra e klasës</p>
-        <h2>Mirë se u kthyet, mësuese Carter</h2>
-        <p>Kthe informacionin e PIA/IEP në mbështetje të qarta, rutina, përditësime për familjen dhe vendime praktike për mësimdhënie.</p>
-        <div class="hero-actions">
-          <button class="primary-button" data-route="upload">Ngarko planin e nxënësit</button>
-          <button class="secondary-button" data-route="aac">Krijo materiale AAC</button>
-          <button class="secondary-button" data-route="coach">Hap Atlasin</button>
+    <section class="hero-panel dashboard-welcome fade-in">
+      <div class="dashboard-welcome-copy">
+        <div class="dashboard-welcome-title">
+          <span class="welcome-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48">
+              <path class="wave-palm" d="M15.5 22.5c1.6-1.2 3.7-.8 4.8.8l1.2 1.8V11.8a3.1 3.1 0 0 1 6.2 0v8.5-11a3.1 3.1 0 0 1 6.2 0v11.5-8.6a3 3 0 0 1 6 0v13.5c0 9.2-5.9 15.3-14.6 15.3-5.7 0-9.3-2.8-12.5-7.2l-4.4-6.1a3.4 3.4 0 0 1 7.1-5.2Z" />
+              <path class="wave-detail" d="M21.5 25.1v4.2M27.7 20.3v8M33.9 20.8v7.5" />
+              <path class="wave-motion" d="M8.7 13.2 5.5 10M11.8 8.6 10.7 4.3M7.2 18.5H2.8" />
+            </svg>
+          </span>
+          <h2>Mirë se u kthyet, mësuese Carter</h2>
         </div>
+        <p>Filloni me hapat e sotëm!</p>
       </div>
-      <div class="weekly-chart" aria-label="Weekly progress chart">
-        ${[62, 70, 68, 74, 82].map((value, index) => `<span style="height:${value}%" title="Day ${index + 1}: ${value}%"></span>`).join("")}
+      <div class="dashboard-teacher-avatar" role="img" aria-label="Profili standard i mësueses Carter">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="teacher-avatar-bg" cx="32" cy="32" r="30" />
+          <path class="teacher-hair" d="M18 28c0-11 6.4-18 14.4-18 9.2 0 15.6 7.6 14.2 19.2-3.1-2.1-5.8-5.4-7.1-9.2-4 5.2-10.7 8.2-21.5 8Z" />
+          <circle class="teacher-face" cx="32" cy="28" r="12" />
+          <path class="teacher-hair-front" d="M20.8 24.7c1.6-8.5 6.5-12.9 12.3-12.9 6.1 0 10.6 4 12 10.2-5.4-1.2-9.4-3.5-12.1-6.5-2.5 4.2-6.5 7.3-12.2 9.2Z" />
+          <circle class="teacher-eye" cx="27.5" cy="28.5" r="1" />
+          <circle class="teacher-eye" cx="36.5" cy="28.5" r="1" />
+          <path class="teacher-smile" d="M27.8 33.2c2.7 2.3 5.8 2.3 8.5 0" />
+          <path class="teacher-shirt" d="M12.5 57.5c1.8-10.2 9-16.1 19.5-16.1s17.7 5.9 19.5 16.1" />
+          <path class="teacher-collar" d="m25.5 42 6.5 6 6.5-6" />
+        </svg>
       </div>
     </section>
-    <section class="stats-grid">
-      ${statCard("Nxënës", state.students.length, "Profile aktive")}
-      ${statCard("Objektiva", student.longTermObjectives.length + student.immediateObjectives.length, "Plani aktual")}
-      ${statCard("Progres", `${progress.successAverage}%`, progress.trend)}
-      ${statCard("Mjete të ruajtura", state.savedTools.size, "Paketa e mësuesit")}
+    <section class="stats-grid dashboard-summary-grid">
+      ${statCard("Profile aktive", state.students.length, "Nxënës të regjistruar", "profiles")}
+      ${statCard("Objektivat e ditës", student.immediateObjectives.length, "Të redaktueshme nga mësuesja", "objectives")}
     </section>
     <section class="dashboard-grid">
       <article class="glass-card">
         <div class="card-header">
-          <h3>Objektivat e radhës</h3>
-          <button class="text-button" data-route="students">Shiko profilin</button>
+          <div>
+            <h3>Objektivat e ditës</h3>
+            <p class="edit-hint">Klikoni mbi një objektiv për ta ndryshuar.</p>
+          </div>
         </div>
-        <ul class="clean-list">
-          ${student.immediateObjectives.map((goal) => `<li><span class="status-dot"></span>${goal}</li>`).join("")}
+        <ul class="clean-list editable-goals">
+          ${student.immediateObjectives.map((goal, index) => {
+            const completed = state.completedGoals.has(index);
+            return `
+            <li class="${completed ? "is-complete" : ""}">
+              <button
+                class="goal-check"
+                type="button"
+                data-action="toggle-dashboard-goal"
+                data-goal-index="${index}"
+                aria-pressed="${completed}"
+                aria-label="${completed ? "Shëno si të pakryer" : "Shëno si të kryer"}: Objektivi ${index + 1}"
+              ></button>
+              <span contenteditable="true" role="textbox" aria-label="Objektivi ${index + 1}" data-dashboard-goal="${index}">${goal}</span>
+            </li>
+          `;
+          }).join("")}
         </ul>
       </article>
       <article class="glass-card">
         <div class="card-header">
           <h3>Aktivitetet e fundit</h3>
-          <button class="text-button" data-route="progress">Regjistro</button>
         </div>
         <ul class="activity-list">
           ${state.activity.map((item) => `<li><strong>${item.title}</strong><span>${item.detail}</span></li>`).join("")}
         </ul>
       </article>
-      <article class="glass-card wide-card">
-        <div class="card-header">
-          <h3>Rekomandimet e fundit nga AI</h3>
-          <button class="text-button" data-route="tools">Hap përputhësin</button>
-        </div>
-        <div class="recommendation-row">
-          ${state.recommendations.slice(0, 3).map((tool) => `
-            <button class="mini-tool" data-tool-id="${tool.id}" data-action="tool-details">
-              <span>${tool.image}</span>
-              <strong>${tool.title}</strong>
-              <small>${tool.goal}</small>
-            </button>
-          `).join("")}
-        </div>
-      </article>
     </section>
   `;
 }
 
-function statCard(label, value, detail) {
+function statCard(label, value, detail, icon) {
+  const icons = {
+    profiles: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>`,
+    objectives: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" />
+        <circle cx="12" cy="12" r="5" />
+        <circle cx="12" cy="12" r="1" />
+        <path d="m15.5 8.5 4-4M16.5 4.5h3v3" />
+      </svg>`
+  };
+
   return `
     <article class="stat-card">
-      <p>${label}</p>
-      <strong data-counter="${value}">${value}</strong>
-      <span>${detail}</span>
+      <div class="stat-card-copy">
+        <p>${label}</p>
+        <strong data-counter="${value}">${value}</strong>
+        <span>${detail}</span>
+      </div>
+      <span class="stat-card-icon">${icons[icon]}</span>
     </article>
   `;
 }

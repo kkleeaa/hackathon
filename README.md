@@ -1,6 +1,6 @@
 AtlasPlan
 
-AtlasPlan is an Albanian-language educational planning application designed to help teachers organize individualized learning support in a simple, warm, and privacy-conscious workspace.
+AtlasPlan is an educational planning application designed to help teachers organize individualized learning support in a simple, warm, and privacy-conscious workspace.
 
 The interface is inspired by Atlas, the app's friendly koala mascot, and uses soft pastel colors, rounded components, animal illustrations, and accessible typography.
 
